@@ -1,0 +1,15 @@
+node_modules
+
+/.cache
+/public/build
+/.netlify
+.env
+/backup
+/build
+*.txt
+/database.db
+*.log
+*.sql
+
+/app/tailwind.css
+.DS_Store

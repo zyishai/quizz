@@ -1,0 +1,11 @@
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+[dir="rtl"] select {
+  background-position: left 0.5rem center;
+  padding-left: 2.5rem;
+  padding-right: 0.75rem;
+}
