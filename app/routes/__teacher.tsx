@@ -1,16 +1,26 @@
-import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
-import React, { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  CalendarDaysIcon,
+  CreditCardIcon,
+  FolderIcon,
+  HomeIcon,
+  ReceiptPercentIcon,
+  UserIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
+import { Fragment, useState } from "react";
 import { json, LoaderArgs } from "@remix-run/node";
-import { getUserId, requireUserId } from "~/utils/session.server";
-import clsx from "clsx";
+import { getUserId, logout, requireUserId } from "~/utils/session.server";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { AppError } from "~/utils/app-error";
 import { ErrorType } from "~/types/errors";
 import { Teacher } from "~/types/teacher";
 import { User } from "~/types/user";
+import { Outlet, useLoaderData } from "@remix-run/react";
+import BetaNoticeBanner from "~/components/beta-banner";
+import SideNav from "~/components/side-nav";
+import UpgradeToProCTA from "~/components/upgrade-to-pro-cta";
 
 export const loader = async ({ request }: LoaderArgs) => {
   await requireUserId(request);
@@ -21,19 +31,14 @@ export const loader = async ({ request }: LoaderArgs) => {
     if (teacher) {
       return json({
         teacher: teacher as Teacher & { user: User },
-        navigation: [
-          { name: "בית", href: "/home" },
-          { name: "תלמידים", href: "/students" },
-          { name: "שיעורים", href: "/calendar" },
-          { name: "תשלומים", href: "/payments" },
-        ],
-        userMenu: [
-          { name: "הפרופיל שלי", href: "/profile", type: "link" },
-          { name: "הגדרות", href: "/settings", type: "link" },
-          { name: "התנתק", href: "/logout", type: "button" },
-        ],
+        // userMenu: [
+        //   { name: "הפרופיל שלי", href: "/profile", type: "link" },
+        //   { name: "הגדרות", href: "/settings", type: "link" },
+        //   { name: "התנתק", href: "/logout", type: "button" },
+        // ],
       });
     } else {
+      return logout(request);
       throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
   } else {
@@ -41,241 +46,183 @@ export const loader = async ({ request }: LoaderArgs) => {
   }
 };
 
+const navigation = [
+  {
+    label: "בית",
+    href: "/",
+    icon: HomeIcon,
+    isPro: false,
+  },
+  {
+    label: "תלמידים",
+    href: "/students",
+    icon: UsersIcon,
+    isPro: false,
+  },
+  {
+    label: "שיעורים",
+    href: "/lessons",
+    icon: CalendarDaysIcon,
+    isPro: false,
+  },
+  {
+    label: "תשלומים",
+    href: "/payments",
+    icon: CreditCardIcon,
+    isPro: false,
+  },
+  {
+    label: "חומרי לימוד",
+    href: "/documents",
+    icon: FolderIcon,
+    isPro: true,
+  },
+  {
+    label: "קבלות",
+    href: "/receipts",
+    icon: ReceiptPercentIcon,
+    isPro: true,
+  },
+  {
+    label: "הפרופיל שלי",
+    href: "/profile",
+    icon: UserIcon,
+    isPro: false,
+  },
+];
+
 export default function TeacherView() {
-  const { teacher, navigation, userMenu } = useLoaderData<typeof loader>();
+  const { teacher } = useLoaderData<typeof loader>();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const proEnabled = false; // [TODO] fetch dynamically from user/teacher.
+
   return (
-    <>
-      <div className="flex h-full flex-col overflow-hidden">
-        <Disclosure as="nav" className="z-50 border-b border-gray-200 bg-white">
-          {({ open }) => (
-            <>
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 justify-between">
-                  <div className="flex">
-                    <div className="flex flex-shrink-0 items-center">
-                      <img
-                        className="h-7 w-auto"
-                        src="/logo-no-text.svg"
-                        alt="The Portal Logo"
-                      />
-                    </div>
-                    <div className="hidden rtl:space-x-reverse sm:-my-px sm:flex sm:space-x-8 sm:ltr:ml-6 sm:rtl:mr-6">
-                      {navigation.map((item) => (
-                        <NavLink
-                          to={item.href}
-                          key={item.name}
-                          className={({ isActive }) =>
-                            clsx([
-                              "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500",
-                              {
-                                "border-orange-500 text-gray-900": isActive,
-                                "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700":
-                                  !isActive,
-                              },
-                            ])
-                          }
-                        >
-                          {item.name}
-                        </NavLink>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="hidden sm:flex sm:items-center sm:ltr:ml-6 sm:rtl:mr-6">
-                    <button
-                      type="button"
-                      className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    >
-                      <span className="sr-only">צפה בהתראות</span>
-                      <BellIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
+    <div className="flex h-full w-full flex-col overflow-hidden bg-white">
+      <BetaNoticeBanner />
+      <div className="flex flex-1 flex-row overflow-hidden">
+        {/* Floating dialog for mobile */}
+        <Transition.Root show={sidebarOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-40 lg:hidden"
+            onClose={setSidebarOpen}
+          >
+            {/* Dark Overlay */}
+            <Transition.Child
+              as={Fragment}
+              enter="transition-opacity ease-linear duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity ease-linear duration-300"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
+            </Transition.Child>
 
-                    {/* Profile dropdown */}
-                    <Menu as="div" className="relative ltr:ml-3 rtl:mr-3">
-                      <div>
-                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
-                          <span className="sr-only">פתח תפריט משתמש</span>
-                          <UserCircleIcon
-                            className="h-8 w-8 rounded-full fill-gray-400 hover:fill-amber-500"
-                            aria-hidden="true"
-                          />
-                        </Menu.Button>
-                      </div>
-                      <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-200"
-                        enterFrom="transform opacity-0 scale-95"
-                        enterTo="transform opacity-100 scale-100"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
+            {/* Dialog panel */}
+            <div className="fixed inset-0 z-40 flex">
+              <Transition.Child
+                as={Fragment}
+                enter="transition ease-in-out duration-300 transform"
+                enterFrom="translate-x-full"
+                enterTo="translate-x-0"
+                leave="transition ease-in-out duration-300 transform"
+                leaveFrom="translate-x-0"
+                leaveTo="translate-x-full"
+              >
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-white pb-4">
+                  {/* Close button */}
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-in-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in-out duration-300"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <div className="absolute top-0 pt-2 ltr:right-0 ltr:-mr-12 rtl:left-0 rtl:-ml-12">
+                      <button
+                        type="button"
+                        className="flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white ltr:ml-1 rtl:mr-1"
+                        onClick={() => setSidebarOpen(false)}
                       >
-                        <Menu.Items className="absolute left-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          {userMenu.map((item) => (
-                            <Menu.Item key={item.name}>
-                              {({ active }) =>
-                                item.type === "button" ? (
-                                  <Form
-                                    action={item.href}
-                                    method="post"
-                                    className={clsx([
-                                      "block px-4 py-2 text-sm text-gray-700",
-                                      { "bg-gray-100": active },
-                                    ])}
-                                  >
-                                    <button className="block w-full ltr:text-left rtl:text-right">
-                                      {item.name}
-                                    </button>
-                                  </Form>
-                                ) : (
-                                  <Link
-                                    to={item.href}
-                                    className={clsx([
-                                      "block px-4 py-2 text-sm text-gray-700",
-                                      { "bg-gray-100": active },
-                                    ])}
-                                  >
-                                    {item.name}
-                                  </Link>
-                                )
-                              }
-                            </Menu.Item>
-                          ))}
-                        </Menu.Items>
-                      </Transition>
-                    </Menu>
-                  </div>
-                  <div className="flex items-center ltr:-mr-2 rtl:-ml-2 sm:hidden">
-                    {/* Mobile menu button */}
-                    <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
-                      <span className="sr-only">פתח תפריט ראשי</span>
-                      {open ? (
+                        <span className="sr-only">Close sidebar</span>
                         <XMarkIcon
-                          className="block h-6 w-6"
+                          className="h-6 w-6 text-white"
                           aria-hidden="true"
                         />
-                      ) : (
-                        <Bars3Icon
-                          className="block h-6 w-6"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </Disclosure.Button>
-                  </div>
-                </div>
-              </div>
-
-              <Disclosure.Panel className="sm:hidden">
-                <div className="space-y-1 pt-2 pb-3">
-                  {navigation.map((item) => (
-                    <Disclosure.Button
-                      key={item.name}
-                      as={React.forwardRef(
-                        (props, ref: React.ForwardedRef<HTMLAnchorElement>) => (
-                          <NavLink
-                            {...props}
-                            ref={ref}
-                            to={item.href}
-                            className={({ isActive }) =>
-                              clsx([
-                                "block py-2 text-base font-medium ltr:border-l-4 ltr:pr-4 ltr:pl-3 rtl:border-r-4 rtl:pr-3 rtl:pl-4",
-                                {
-                                  "border-orange-500 bg-orange-50 text-orange-700":
-                                    isActive,
-                                },
-                                {
-                                  "border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800":
-                                    !isActive,
-                                },
-                              ])
-                            }
-                          />
-                        )
-                      )}
-                    >
-                      {item.name}
-                    </Disclosure.Button>
-                  ))}
-                </div>
-                <div className="border-t border-gray-200 pt-4 pb-3">
-                  <div className="flex items-center px-4">
-                    <div className="flex-shrink-0">
-                      <span className="sr-only">פתח תפריט משתמש</span>
-                      <UserCircleIcon
-                        className="h-10 w-10 rounded-full fill-gray-500"
-                        aria-hidden="true"
+                      </button>
+                    </div>
+                  </Transition.Child>
+                  {/* Content (logo & navigation) */}
+                  <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
+                    {/* App Logo */}
+                    <div className="mb-5 flex flex-shrink-0 items-center px-4">
+                      <img
+                        className="h-8 w-auto"
+                        src="/logo-no-text.svg"
+                        alt="Portal logo"
                       />
                     </div>
-                    <div className="ltr:ml-3 rtl:mr-3">
-                      <div className="text-base font-medium text-gray-800">
-                        {teacher?.firstName} {teacher?.lastName}
-                      </div>
-                      <div className="text-sm font-light text-gray-500">
-                        {teacher?.user?.email}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ltr:ml-auto rtl:mr-auto"
-                    >
-                      <span className="sr-only">צפה בהתראות</span>
-                      <BellIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
+                    <SideNav navigation={navigation} proEnabled={proEnabled} />
                   </div>
-                  <div className="mt-3 space-y-1">
-                    {userMenu.map((item) => (
-                      <Disclosure.Button
-                        key={item.name}
-                        as={
-                          item.type === "button"
-                            ? React.forwardRef(
-                                (
-                                  { className, to, ...props }: any,
-                                  ref: any
-                                ) => (
-                                  <Form action={item.href} method="post">
-                                    <button
-                                      type="submit"
-                                      className={clsx([
-                                        "block w-full px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 ltr:text-left rtl:text-right",
-                                        className,
-                                      ])}
-                                    >
-                                      {item.name}
-                                    </button>
-                                  </Form>
-                                )
-                              )
-                            : Link
-                        }
-                        to={item.href}
-                        className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                      >
-                        {item.name}
-                      </Disclosure.Button>
-                    ))}
-                  </div>
-                </div>
-              </Disclosure.Panel>
-            </>
-          )}
-        </Disclosure>
+                  <UpgradeToProCTA />
+                </Dialog.Panel>
+              </Transition.Child>
+              <div className="w-14 flex-shrink-0">
+                {/* Force sidebar to shrink to fit close icon */}
+              </div>
+            </div>
+          </Dialog>
+        </Transition.Root>
 
-        <div className="flex flex-1 flex-col overflow-hidden bg-white py-6">
-          {/* <header>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
+        {/* Static sidebar for desktop */}
+        <div className="hidden lg:relative lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+          {/* Sidebar component, swap this element with another sidebar if you like */}
+          <div className="flex min-h-0 flex-1 flex-col border-gray-200 bg-white pb-4 ltr:border-r rtl:border-l">
+            {/* App logo & navigation menu */}
+            <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
+              <div className="mb-5 flex flex-shrink-0 items-center px-4">
+                <img
+                  className="h-8 w-auto"
+                  src="/logo-no-text.svg"
+                  alt="Portal logo"
+                />
+              </div>
+              <SideNav navigation={navigation} proEnabled={proEnabled} />
             </div>
-          </header> */}
-          <main className="flex flex-1 overflow-hidden">
-            <div className="mx-auto max-w-7xl flex-1 overflow-hidden sm:px-6 lg:px-8">
-              {/* <div className="px-4 py-8 sm:px-0">
-                <div className="h-96 rounded-lg border-4 border-dashed border-gray-200" />
-              </div> */}
-              <Outlet />
-            </div>
+
+            {/* Pro CTA notice */}
+            <UpgradeToProCTA />
+          </div>
+        </div>
+
+        {/* Main content area (& hamburger menu button for mobile) */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Hamburger menu for mobile */}
+          <div className="sticky top-0 z-10 flex items-center border-b bg-white pt-1 ltr:pl-1 rtl:pr-1 sm:pt-3 sm:ltr:pl-3 sm:rtl:pr-3 lg:hidden">
+            <button
+              type="button"
+              className="-mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ltr:-ml-0.5 rtl:-mr-0.5"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <span className="sr-only">Open sidebar</span>
+              <Bars3Icon className="mt-1 h-6 w-6" aria-hidden="true" />
+            </button>
+            <h1 className="text-2xl font-medium text-gray-800">
+              הפורטל
+              <span className="font-bold text-amber-600"> למורה</span>
+            </h1>
+          </div>
+
+          <main className="flex max-w-7xl flex-1 overflow-hidden py-6 px-4 sm:px-6 lg:px-8">
+            {/* Your content */}
+            <Outlet />
           </main>
         </div>
       </div>
-    </>
+    </div>
   );
 }

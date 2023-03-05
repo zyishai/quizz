@@ -24,10 +24,10 @@ const paymentMethods = [
 ];
 
 type PaymentFormProps = {
+  id: string;
   credits: Credit[];
   fields?: PaymentFormFields;
   price: number;
-  back: string;
 };
 type PaymentFormFields = {
   paymentStatus: PaymentStatus;
@@ -36,10 +36,10 @@ type PaymentFormFields = {
   creditId?: string;
 };
 export default function PaymentForm({
+  id,
   fields,
   credits,
   price,
-  back,
 }: PaymentFormProps) {
   const [selectedPayingOption, setSelectedPayingOption] = useState(
     fields?.paymentStatus || PaymentStatus.DEBIT
@@ -47,6 +47,7 @@ export default function PaymentForm({
 
   return (
     <Form
+      id={id}
       method="post"
       replace
       className="grid max-w-[672px] grid-cols-6 gap-6"
@@ -54,7 +55,7 @@ export default function PaymentForm({
       <input type="hidden" name="price" value={price} />
 
       <div className="col-span-6">
-        <label className="text-sm font-medium text-gray-900">סוג תשלום</label>
+        <label className="text-sm font-semibold text-gray-900">סוג תשלום</label>
         <fieldset className="mt-0">
           <legend className="sr-only">ביצוע תשלום</legend>
           <div className="divide-y divide-gray-200">
@@ -86,7 +87,7 @@ export default function PaymentForm({
 
       {selectedPayingOption !== PaymentStatus.DEBIT ? (
         <div className="col-span-6">
-          <label className="text-sm font-medium text-gray-900">
+          <label className="text-sm font-semibold text-gray-900">
             אופן תשלום
           </label>
 
@@ -121,7 +122,7 @@ export default function PaymentForm({
               <div className="mt-6">
                 <label
                   htmlFor="sum"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700"
                 >
                   סכום (בשקלים)
                 </label>
@@ -130,7 +131,6 @@ export default function PaymentForm({
                   name="sum"
                   id="sum"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 disabled:bg-gray-50 sm:text-sm"
-                  dir="ltr"
                   defaultValue={fields?.sum || 0}
                 />
               </div>
@@ -176,21 +176,6 @@ export default function PaymentForm({
           ) : null}
         </div>
       ) : null}
-
-      <div className="col-span-6 flex flex-col justify-end space-y-3 space-y-reverse rtl:space-x-reverse sm:flex-row sm:space-y-0 sm:space-x-3">
-        <Link
-          to={back}
-          className="order-2 rounded-md border border-gray-300 bg-white py-2.5 px-4 text-center font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:py-2 sm:text-sm"
-        >
-          ביטול
-        </Link>
-        <button
-          type="submit"
-          className="order-1 inline-flex justify-center rounded-md border border-transparent bg-amber-500 py-2.5 px-4 font-medium text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:order-3 sm:py-2 sm:text-sm"
-        >
-          שלח
-        </button>
-      </div>
     </Form>
   );
 }

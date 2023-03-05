@@ -3,6 +3,7 @@ import { Credit, PaymentMethod } from "~/types/payment";
 import { Contact, CreateContactDto, CreateStudentDto, Grade, Student, UpdateContactDto, UpdateStudentDto } from "~/types/student";
 import { truthy } from "~/utils/misc";
 import { getDatabaseInstance } from "./db.adapter";
+import { addStudentToPaymentAccount, createPaymentAccount } from "./payment.adapter";
 
 // Module level types
 
@@ -122,6 +123,17 @@ export async function createStudent(dto: CreateStudentDto): Promise<Student | nu
   }
 
   if (student.result.length > 0) {
+    // Attach student and contacts to existing or new payment account
+    if (dto.paymentAccountId) {
+      if (!await addStudentToPaymentAccount({ accountId: dto.paymentAccountId, studentId: student.result[0].id, contactIds: contacts })) {
+        throw new Error(`Could not attach student to payment account: ${dto.paymentAccountId}`);
+      }
+    } else {
+      if (!await createPaymentAccount({ teacherId: dto.teacherId, students: [student.result[0].id], contacts })) {
+        throw new Error(`Could not create payment account for the student`);
+      }
+    }
+
     // Relate student to teacher
     const [relationResponse] = await db.query('relate $teacherId -> teach -> $studentId', { teacherId: dto.teacherId, studentId: student.result[0].id });
     if (relationResponse.error) {

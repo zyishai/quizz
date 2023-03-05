@@ -24,6 +24,7 @@ export type DirectPayment = {
   paidAt: DateTimeString;
 };
 export type CreditPayment = {
+  sum: number;
   creditId: string;
   paidAt: DateTimeString;
 };

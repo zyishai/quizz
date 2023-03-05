@@ -22,7 +22,7 @@ export default function Index() {
         </p>
         <div className="flex space-x-3">
           <Link
-            to="calendar"
+            to="lessons"
             className="rounded-md bg-orange-500 px-6 py-3 text-lg text-white shadow-sm shadow-neutral-400 transition-colors duration-150 hover:bg-orange-600"
           >
             Start Now

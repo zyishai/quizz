@@ -1,5 +1,4 @@
 import { EntityBase } from "./misc";
-import { Payment } from "./payment";
 import { Student } from "./student";
 import { Event } from "./event";
 
@@ -11,8 +10,6 @@ export type Lesson = EntityBase & {
   price: number;
   student: Student | string;
   summary?: string;
-  paid: number;
-  payments: Payment[];
   ended?: boolean;
 }
 

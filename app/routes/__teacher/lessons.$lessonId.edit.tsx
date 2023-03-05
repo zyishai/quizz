@@ -1,6 +1,6 @@
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { badRequest, namedAction } from "remix-utils";
+import { Link, useLoaderData } from "@remix-run/react";
+import { badRequest, namedAction, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import EventForm from "~/components/event-form";
 import {
@@ -27,8 +27,9 @@ export const action = async ({ request, params }: ActionArgs) => {
       const topic = formData.get("topic")?.toString();
       const studentId = formData.get("studentId")?.toString();
       const eventId = formData.get("eventId")?.toString();
+      const price = formData.get("price")?.toString();
 
-      const fields = { datetime, duration, topic, studentId, eventId };
+      const fields = { datetime, duration, topic, studentId, eventId, price };
       const fieldErrors = {
         datetime: undefined,
         duration: undefined,
@@ -52,7 +53,7 @@ export const action = async ({ request, params }: ActionArgs) => {
         throw new AppError({ errType: ErrorType.LessonUpdateFailed });
       }
 
-      return redirect(`/calendar/${params.lessonId}`);
+      return redirect(safeRedirect(`/lessons/${params.lessonId}`, "/lessons"));
     },
   });
 };
@@ -84,34 +85,45 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   }
 };
 
-export default function EditLesson() {
+export default function EditLessonDetailsPage() {
   const { lesson, students, availableSlots } = useLoaderData<typeof loader>();
   const eventFetched = hasEventFetched(lesson);
   const studentFetched = hasStudentFetched(lesson);
 
   return (
-    <div className="overflow-auto px-2 pb-2">
-      <header className="mb-4 sm:mb-5">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          עריכת פרטי שיעור
-        </h3>
-        {/* <p className="mt-1 text-sm text-gray-500">
-          מלא את פרטי איש הקשר בטופס בבקשה.
-        </p> */}
-      </header>
+    <div className="flex-1 overflow-auto px-2 pb-2">
       <EventForm
+        id="update-lesson-form"
         fields={{
           datetime: eventFetched ? lesson.event.dateAndTime : undefined,
           duration: eventFetched ? lesson.event.duration.toString() : undefined,
           studentId: studentFetched ? lesson.student.id : undefined,
           topic: lesson.topic,
+          price: eventFetched
+            ? ((lesson.price / lesson.event.duration) * 60)?.toString()
+            : undefined,
           slots: availableSlots,
           eventId: eventFetched ? lesson.event.id : undefined,
           lessonId: lesson.id,
         }}
         students={students}
-        back={`/calendar/${lesson.id}`}
       />
+
+      <div className="mt-6 flex max-w-[672px] flex-col justify-end space-y-5 space-y-reverse rtl:space-x-reverse sm:flex-row sm:items-center sm:space-y-0 sm:space-x-5">
+        <Link
+          to={`/lessons/${lesson.id}`}
+          className="order-2 rounded-md border-0 border-gray-300 bg-white text-center font-medium text-orange-500 shadow-none hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:text-sm"
+        >
+          ביטול
+        </Link>
+        <button
+          type="submit"
+          form="update-lesson-form"
+          className="order-1 inline-flex justify-center rounded-md border border-transparent bg-amber-500 py-2.5 px-4 font-medium text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:order-3 sm:py-2 sm:text-sm"
+        >
+          עדכן פרטי שיעור
+        </button>
+      </div>
     </div>
   );
 }

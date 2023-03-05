@@ -14,16 +14,26 @@ import { formatDuration } from "~/utils/format";
 import StudentAvatar from "./student-avatar";
 import { Student } from "~/types/student";
 import { Link } from "@remix-run/react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 
 interface EventsCalendarProps {
-  events: Lesson[];
+  lessons: Lesson[];
   range: {
     start: number | string | Date;
     end: number | string | Date;
   };
+  onPreviousWeek: () => void;
+  onNextWeek: () => void;
+  onCurrentDayChanged?: (date: string | Date) => void;
 }
 
-export default function EventsCalendar({ events, range }: EventsCalendarProps) {
+export default function EventsCalendar({
+  lessons,
+  range,
+  onPreviousWeek,
+  onNextWeek,
+  onCurrentDayChanged,
+}: EventsCalendarProps) {
   const timeRange = useMemo(
     () => ({
       start: { hour: 8, minute: 0 },
@@ -132,20 +142,42 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
     }
   }, [range]);
 
+  useEffect(() => {
+    if (typeof onCurrentDayChanged === "function") {
+      const dayIndex = days[dayInView.findIndex(Boolean)];
+      if (dayIndex) {
+        onCurrentDayChanged(dayIndex);
+      }
+    }
+  }, [dayInView, days]);
+
   return (
-    <div className="flex flex-auto flex-col overflow-hidden bg-white">
+    <div className="flex flex-auto flex-col overflow-hidden border-b border-gray-200 bg-white">
       <div
         style={{ width: "100%" }}
         className="grid max-w-full flex-1 snap-x snap-mandatory scroll-p-0 auto-cols-[100%] grid-flow-col overflow-y-hidden overflow-x-scroll sm:max-w-none md:max-w-full"
       >
         <div className="bg-amber-30 snap-center snap-always overflow-y-scroll">
-          {/* Header */}
+          {/* Header (mobile & desktop) */}
           <div
             className={clsx([
-              "sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:ltr:pr-8 sm:rtl:pl-8",
+              "sticky top-0 z-30 flex-none border-t border-gray-300 bg-white shadow ring-1 ring-black ring-opacity-5",
             ])}
           >
-            <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
+            {/* Mobile header */}
+            <div
+              className="grid text-sm leading-6 text-gray-500 sm:hidden"
+              style={{
+                gridTemplateColumns: "auto repeat(7, minmax(0, 1fr)) auto",
+              }}
+            >
+              <button
+                type="button"
+                className="border-l pr-1 pl-2"
+                onClick={onPreviousWeek}
+              >
+                <ChevronRightIcon className="h-6 w-auto" />
+              </button>
               {days.map((day, dayIndex) => (
                 <button
                   type="button"
@@ -164,7 +196,7 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                     className={clsx([
                       "mt-1 flex h-8 w-8 items-center justify-center font-semibold",
                       {
-                        "rounded-full bg-orange-600 text-white":
+                        "rounded-full bg-amber-500 text-white":
                           dayInView[day.getDay()],
                       },
                       { "text-gray-900": !dayInView[day.getDay()] },
@@ -174,10 +206,25 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                   </span>
                 </button>
               ))}
+              <button
+                type="button"
+                className="border-r pl-1 pr-2"
+                onClick={onNextWeek}
+              >
+                <ChevronLeftIcon className="h-6 w-auto" />
+              </button>
             </div>
 
+            {/* Desktop header */}
             <div className="hidden grid-cols-7 divide-x divide-gray-100 border-gray-100 text-sm leading-6 text-gray-500 ltr:-mr-px ltr:border-r rtl:-ml-px rtl:divide-x-reverse rtl:border-l sm:grid">
-              <div className="col-end-1 w-14" />
+              <div className="col-end-1 flex w-14 justify-end">
+                <button
+                  className="bg-gray-100 pl-1 pr-1"
+                  onClick={onPreviousWeek}
+                >
+                  <ChevronRightIcon className="h-6 w-auto" />
+                </button>
+              </div>
               {days.map((day) => (
                 <div
                   className="flex items-center justify-center py-3"
@@ -190,7 +237,7 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                         "flex h-8 w-8 items-center justify-center font-semibold ltr:ml-1.5 rtl:mr-1.5",
                         { "text-gray-900": !dayjs().isSame(day, "date") },
                         {
-                          "rounded-full bg-amber-600 text-white":
+                          "rounded-full bg-amber-500 text-white":
                             dayjs().isSame(day, "date"),
                         },
                       ])}
@@ -200,8 +247,14 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                   </span>
                 </div>
               ))}
+              <div className="col-end-9 flex w-8 justify-start">
+                <button className="bg-gray-100 pr-1" onClick={onNextWeek}>
+                  <ChevronLeftIcon className="h-6 w-auto" />
+                </button>
+              </div>
             </div>
           </div>
+
           {/* Calendar */}
           <div className="relative flex flex-auto">
             <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100" />
@@ -270,7 +323,7 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                   gridTemplateRows: `1.75rem repeat(${getGridRowsFromTimeRange(timeRange)}, minmax(0, 1fr)) auto`, // prettier-ignore
                 }}
               >
-                {events
+                {lessons
                   .filter(hasEventFetched)
                   .filter(hasStudentFetched)
                   .map((lesson) => {
@@ -291,7 +344,7 @@ export default function EventsCalendar({ events, range }: EventsCalendarProps) {
                       >
                         <div className="group absolute inset-1">
                           <Link
-                            to={`${lesson.id}`}
+                            to={`../${lesson.id}`}
                             className="flex h-full w-full flex-col overflow-y-auto rounded-lg bg-blue-50 p-1.5 pb-2 leading-5 hover:bg-blue-100"
                           >
                             <div className="space-x-1.5 rtl:space-x-reverse">

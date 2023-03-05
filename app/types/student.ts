@@ -22,6 +22,7 @@ export type CreateStudentDto = {
   grade: Grade;
   contacts: CreateContactDto[];
   teacherId: string;
+  paymentAccountId?: string;
 }
 export type UpdateContactDto = {
   contactId: string;

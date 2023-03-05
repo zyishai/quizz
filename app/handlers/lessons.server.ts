@@ -1,14 +1,12 @@
 import { DateRange } from "~/types/datetime";
 import { CreateLessonDto, Lesson, UpdateLessonDto } from "~/types/lesson";
-import { createLesson, deleteLessonById, fetchLessonById, fetchLessonsByTeacherId, makePaymentForLesson, removePaymentFromLesson, updateLessonDetails, updatePaymentDetails } from "~/adapters/lesson.adapter";
+import { createLesson, deleteLessonById, fetchLessonById, fetchLessonsByTeacherId, updateLessonDetails } from "~/adapters/lesson.adapter";
 import dayjs from "dayjs";
-import { assertString, assertValidRange, hasEventFetched, truthy } from "~/utils/misc";
+import { assertNumber, assertString, assertValidRange, hasEventFetched, truthy } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { AppError } from "~/utils/app-error";
 import { ErrorType } from "~/types/errors";
-import { CreditPayment, DirectPayment, Payment, PaymentMethod } from "~/types/payment";
-import { fetchCreditById } from "~/adapters/student.adapter";
 import { updateEventDetails } from "~/adapters/event.adapter";
 import { UpdateEventDto } from "~/types/event";
 
@@ -95,37 +93,48 @@ export const findAvailableTimes = async (request: Request, constraint: Available
 }
 
 export const getLesson = async (teacherId: string, lessonId: string) => {
-  return fetchLessonById({teacherId, lessonId, fetch: ['event', 'student']});
+  const lesson = await fetchLessonById({teacherId, lessonId, fetch: ['event', 'student']});
+  if (!lesson) {
+    throw new AppError({ errType: ErrorType.LessonNotFound });
+  }
+
+  return lesson;
 }
 
-export const fetchPaymentsDetails: (payments: Payment[]) => Promise<Array<DirectPayment & Partial<CreditPayment>>> = async (payments: Payment[]) => {
-  return Promise.all(payments.map(async (payment) => {
-    if ((payment as any).creditId) {
-      return (await fetchCreditById((payment as any).creditId)) as DirectPayment & Partial<CreditPayment>;
-    } else {
-      return payment as DirectPayment & Partial<CreditPayment>;
-    }
-  })).then(res => res.filter(truthy));
-}
+// export const fetchPaymentsDetails: (payments: Payment[]) => Promise<Array<DirectPayment & Partial<CreditPayment>>> = async (payments: Payment[]) => {
+//   return Promise.all(payments.map(async (payment) => {
+//     if ((payment as any).creditId) {
+//       return (await fetchCreditById((payment as any).creditId)) as DirectPayment & Partial<CreditPayment>;
+//     } else {
+//       return payment as DirectPayment & Partial<CreditPayment>;
+//     }
+//   })).then(res => res.filter(truthy));
+// }
 
-export const constructNewLessonDto: (request: Request, eventId?: string) => Promise<CreateLessonDto> = async (request: Request, eventId?: string) => {
+export const constructNewLessonDto: (request: Request, duration: number, eventId?: string) => Promise<CreateLessonDto> = async (request: Request, duration: number, eventId?: string) => {
   assertString(eventId);
   const formData = await request.formData();
   const topic = formData.get('topic')?.toString();
   const studentId = formData.get('studentId');
   assertString(studentId);
-  const price = 150; // TODO: add price selector to event-form.
+  const price = Number(formData.get('price'));
+  assertNumber(price);
 
   return {
     eventId,
     topic,
-    price,
+    price: price * duration / 60,
     studentId,
   }
 }
 
 export const createNewLesson = async (dto: CreateLessonDto) => {
-  return createLesson(dto);
+  const lesson = await createLesson(dto);
+  if (!lesson) {
+    throw new AppError({ errType: ErrorType.LessonNotCreated });
+  }
+
+  return lesson;
 }
 
 type UpdateLessonDtoProps = {
@@ -137,8 +146,11 @@ export const constructUpdateLessonDto: (request: Request, props: UpdateLessonDto
   const formData = await request.formData();
   const dateAndTime = formData.get('datetime')?.toString();
   const duration = Number(formData.get('duration'));
+  assertNumber(duration);
   const topic = formData.get('topic')?.toString();
   const studentId = formData.get('studentId')?.toString();
+  const price = Number(formData.get('price'));
+  assertNumber(price);
 
   return {
     lessonId,
@@ -146,6 +158,7 @@ export const constructUpdateLessonDto: (request: Request, props: UpdateLessonDto
     duration,
     eventId: dateAndTime || duration ? eventId : undefined,
     topic,
+    price: price * duration / 60,
     studentId
   }
 }
@@ -157,7 +170,12 @@ export const updateLesson = async (dto: Partial<UpdateLessonDto> & Partial<Updat
     }
   }
   
-  return updateLessonDetails(dto);
+  const lesson =  await updateLessonDetails(dto);
+  if (!lesson) {
+    throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+  }
+
+  return lesson;
 }
 
 export const deleteLesson = async (lessonId: string) => {
@@ -167,13 +185,9 @@ export const deleteLesson = async (lessonId: string) => {
 type FinishLessonProps = {
   lessonId: string;
   summary?: string;
-  price: number;
-  paymentMethod?: PaymentMethod;
-  sum?: number;
-  creditId?: string;
 }
 export const finishLesson = async (props: FinishLessonProps) => {
-  const { lessonId, summary, sum, creditId } = props;
+  const { lessonId, summary } = props;
   console.log(props);
   
   const lesson = await updateLessonDetails({ lessonId, summary, ended: true });
@@ -181,49 +195,45 @@ export const finishLesson = async (props: FinishLessonProps) => {
     throw new AppError({ errType: ErrorType.LessonUpdateFailed });
   }
 
-  if (!sum && !creditId) { // not paid
-    return true;
-  }
-
-  return addPayment(props);
+  return lesson;
 }
 
-type AddPaymentProps = {
-  lessonId: string;
-  price: number;
-  paymentMethod?: PaymentMethod;
-  sum?: number;
-  creditId?: string;
-}
-export const addPayment = async (props: AddPaymentProps) => {
-  const { lessonId, price, paymentMethod, sum, creditId } = props;
+// type AddPaymentProps = {
+//   lessonId: string;
+//   price: number;
+//   paymentMethod?: PaymentMethod;
+//   sum?: number;
+//   creditId?: string;
+// }
+// export const addPayment = async (props: AddPaymentProps) => {
+//   const { lessonId, price, paymentMethod, sum, creditId } = props;
 
-  if (creditId) { // credit
-    const credit = await fetchCreditById(creditId);
-    if (!credit) {
-      throw new AppError({ errType: ErrorType.CreditNotFound });
-    }
-    return makePaymentForLesson({ lessonId, creditId, sum: Math.min(credit.remaining, price) })
-  } else if (sum && paymentMethod) { // one-time payment
-    return makePaymentForLesson({ lessonId, sum, paymentMethod });
-  } else { // invalid
-    throw new AppError({ errType: ErrorType.InvalidOrMissingPaymentInformation });
-  }
-}
+//   if (creditId) { // credit
+//     const credit = await fetchCreditById(creditId);
+//     if (!credit) {
+//       throw new AppError({ errType: ErrorType.CreditNotFound });
+//     }
+//     return makePaymentForLesson({ lessonId, creditId, sum: Math.min(credit.remaining, price) })
+//   } else if (sum && paymentMethod) { // one-time payment
+//     return makePaymentForLesson({ lessonId, sum, paymentMethod });
+//   } else { // invalid
+//     throw new AppError({ errType: ErrorType.InvalidOrMissingPaymentInformation });
+//   }
+// }
 
-type UpdatePaymentProps = {
-  lessonId: string;
-  paymentIndex: number;
-  creditId?: string;
-  sum?: number;
-  paymentMethod?: PaymentMethod;
-}
-export const updatePayment = async (props: UpdatePaymentProps) => {
-  const { lessonId, paymentIndex, creditId, sum, paymentMethod } = props;
+// type UpdatePaymentProps = {
+//   lessonId: string;
+//   paymentIndex: number;
+//   creditId?: string;
+//   sum?: number;
+//   paymentMethod?: PaymentMethod;
+// }
+// export const updatePayment = async (props: UpdatePaymentProps) => {
+//   const { lessonId, paymentIndex, creditId, sum, paymentMethod } = props;
 
-  return updatePaymentDetails(lessonId, paymentIndex, { paymentMethod, sum, creditId });
-}
+//   return updatePaymentDetails(lessonId, paymentIndex, { paymentMethod, sum, creditId });
+// }
 
-export const deletePayment = async (lessonId: string, paymentIndex:number) => {
-  return removePaymentFromLesson(lessonId, paymentIndex);
-}
+// export const deletePayment = async (lessonId: string, paymentIndex:number) => {
+//   return removePaymentFromLesson(lessonId, paymentIndex);
+// }
