@@ -60,7 +60,7 @@ export const findAvailableTimes = async (request: Request, constraint: Available
       })).filter(hasEventFetched).filter((lesson) => !ignoreIds?.includes(lesson.id));
 
       for (let time = fromTimeInMinutes; time + duration <= untilTimeInMinutes; time += 15 /** min lesson length */) {
-        const targetDateTime = dayjs(date).startOf("date").minute(time);
+        const targetDateTime = dayjs(date).hour(Math.floor(time / 60)).minute(time % 60).second(0).millisecond(0);
         // A
         const targetStart = targetDateTime;
         const targetEnd = targetDateTime.add(duration, 'minutes');

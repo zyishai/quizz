@@ -1,30 +1,10 @@
-import {
-  ChevronRightIcon,
-  ChevronLeftIcon,
-  PlusIcon,
-} from "@heroicons/react/24/outline";
-import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-} from "@remix-run/react";
-import dayjs from "dayjs";
+import { ActionArgs, redirect } from "@remix-run/node";
+import { useLocation, useNavigate } from "@remix-run/react";
 import { useLayoutEffect } from "react";
-import { namedAction, safeRedirect } from "remix-utils";
-import { getTeacherByUserId } from "~/adapters/teacher.adapter";
-import EventsCalendar from "~/components/events-calendar";
-import { findLessonsInRange } from "~/handlers/lessons.server";
-import { OffsetUnit } from "~/types/datetime";
+import { safeRedirect } from "remix-utils";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
-import { getRange } from "~/utils/calendar";
 import { useClientPrefs } from "~/utils/client-prefs";
-import { offsetRangeBy } from "~/utils/datetime";
-import { getUserId } from "~/utils/session.server";
 
 export const action = async ({ request }: ActionArgs) => {
   throw new AppError({
@@ -93,6 +73,10 @@ export const action = async ({ request }: ActionArgs) => {
   //     }
   //   },
   // });
+};
+
+export const loader = async () => {
+  return redirect(safeRedirect("/lessons/calendar", "/"));
 };
 
 // export const loader = async ({ request }: LoaderArgs) => {
