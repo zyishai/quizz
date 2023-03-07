@@ -27,3 +27,4 @@ colors-suggestion.txt
 database.db
 backup
 migrations/.migrations
+conf
