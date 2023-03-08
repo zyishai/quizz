@@ -8,6 +8,9 @@ pipeline {
   // tools {
   //   docker '<version>' // <-- should be configured under `Manage Jenkins → Global Tool Configuration`
   // }
+  triggers {
+    githubPush()
+  }
   environment {
     DH_CREDS=credentials('DH_CREDS')
     // SSH_CREDS=credentials('SSH_CREDS')
