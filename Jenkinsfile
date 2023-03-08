@@ -24,7 +24,11 @@ pipeline {
         sh'''
           echo "building tag ${TAG_NAME}"
           docker build . -t portal:${TAG_NAME}
+          docker build . -t portal:${TAG_NAME}-amd64 --platform linux/amd64
           docker tag portal:${TAG_NAME} wishai/portal:${TAG_NAME}
+          docker tag portal:${TAG_NAME}-amd64 wishai/portal:${TAG_NAME}-amd64
+          docker tag portal:${TAG_NAME} wishai/portal:latest
+          docker tag portal:${TAG_NAME}-amd64 wishai/portal:latest-amd64
         '''
       }
     }
@@ -34,6 +38,9 @@ pipeline {
         sh'''
           echo $DH_CREDS_PSW | docker login --username=${DH_CREDS_USR} --password-stdin
           docker push wishai/portal:${TAG_NAME}
+          docker push wishai/portal:${TAG_NAME}-amd64
+          docker push wishai/portal:latest
+          docker push wishai/portal:latest-amd64
         '''
       }
       post {
@@ -47,8 +54,11 @@ pipeline {
 
       steps {
         script {
-          updateServerCommand = "whoami && \
-              docker ps"
+          updateServerCommand = "cd /home/app && \
+              docker compose pull && \
+              docker compose up app -d --remove-orphans && \
+              docker compose up gateway -d --force-recreate && \
+              docker image prune -f"
         }
 
         sshagent(credentials: ['SSH_CREDS']) {
