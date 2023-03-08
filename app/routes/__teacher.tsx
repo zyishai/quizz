@@ -97,7 +97,7 @@ export default function TeacherView() {
   const proEnabled = false; // [TODO] fetch dynamically from user/teacher.
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-white">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-blue-200">
       <BetaNoticeBanner />
       <div className="flex flex-1 flex-row overflow-hidden">
         {/* Floating dialog for mobile */}
