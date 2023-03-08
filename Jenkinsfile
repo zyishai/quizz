@@ -22,7 +22,7 @@ pipeline {
       when { buildingTag() }
       steps {
         sh'''
-          echo "building tag ${env.TAG_NAME}"
+          echo "building tag ${TAG_NAME}"
           // docker build . -t <docker_image>:<image_tag>
         '''
       }
