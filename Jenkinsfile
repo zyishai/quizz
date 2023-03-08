@@ -12,6 +12,8 @@ pipeline {
     githubPush()
   }
   environment {
+    // TAG_NAME = sh(returnStdout: true, script: "git --no-pager tag --points-at HEAD").trim()
+    TAG_NAME = sh(returnStdout: true, script: "git describe --tags --abbrev=0").trim()
     DH_CREDS=credentials('DH_CREDS')
     // SSH_CREDS=credentials('SSH_CREDS')
   }
