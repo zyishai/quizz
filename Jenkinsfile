@@ -23,8 +23,9 @@ pipeline {
       steps {
         sh'''
           echo "building tag ${TAG_NAME}"
+          docker build . -t portal:${TAG_NAME}
+          docker tag portal:${TAG_NAME} wishai/portal:${TAG_NAME}
         '''
-        // docker build . -t <docker_image>:<image_tag>
       }
     }
     stage('Push image to DockerHub') {
@@ -32,8 +33,8 @@ pipeline {
       steps {
         sh'''
           echo $DH_CREDS_PSW | docker login --username=${DH_CREDS_USR} --password-stdin
+          docker push wishai/portal:${TAG_NAME}
         '''
-        // docker push <docker_image>:<image_tag>
       }
       post {
         always {
