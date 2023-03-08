@@ -9,7 +9,7 @@ pipeline {
   //   docker '<version>' // <-- should be configured under `Manage Jenkins → Global Tool Configuration`
   // }
   triggers {
-    buildingTag()
+    githubPush()
   }
   environment {
     DH_CREDS=credentials('DH_CREDS')
