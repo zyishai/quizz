@@ -8,7 +8,7 @@ import {
 } from "@remix-run/react";
 import { IconCalendarPlus } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import EventsCalendar from "~/components/events-calendar";
@@ -17,7 +17,7 @@ import { OffsetUnit } from "~/types/datetime";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
 import { getRange } from "~/utils/calendar";
-import { commitClientPrefs, useClientPrefs } from "~/utils/client-prefs";
+import { setLastLessonsView } from "~/utils/client-prefs.server";
 import { offsetRangeBy } from "~/utils/datetime";
 import { getUserId } from "~/utils/session.server";
 
@@ -94,10 +94,17 @@ export const loader = async ({ request }: LoaderArgs) => {
       const range = await getRange(request);
       const events = await findLessonsInRange(teacher.id, range);
 
-      return json({
-        events,
-        range,
-      });
+      return json(
+        {
+          events,
+          range,
+        },
+        {
+          headers: {
+            "Set-Cookie": await setLastLessonsView(request, "calendar"),
+          },
+        }
+      );
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
@@ -110,7 +117,6 @@ export default function LessonsCalendarView() {
   const [currentDate, setCurrentDate] = useState<string | Date | null>(null);
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const clientPrefs = useClientPrefs();
   const submit = useSubmit();
 
   const events = useMemo(
@@ -130,11 +136,6 @@ export default function LessonsCalendarView() {
       new Date(range.start).getFullYear() === new Date(range.end).getFullYear(),
     [range]
   );
-
-  useEffect(() => {
-    clientPrefs.lastLessonsView = "calendar";
-    commitClientPrefs(clientPrefs);
-  }, []);
 
   return (
     <>

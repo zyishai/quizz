@@ -1,7 +1,6 @@
 import { PowerIcon } from "@heroicons/react/24/outline";
 import { Form, NavLink } from "@remix-run/react";
 import clsx from "clsx";
-import { useClientPrefs } from "~/utils/client-prefs";
 
 type NavItem = {
   label: string;
@@ -14,8 +13,6 @@ type SideNavProps = {
   proEnabled?: boolean;
 };
 export default function SideNav({ navigation, proEnabled }: SideNavProps) {
-  const clientPrefs = useClientPrefs();
-
   return (
     <nav className="space-y-1 bg-white px-2">
       {navigation.map((item) =>
@@ -39,7 +36,6 @@ export default function SideNav({ navigation, proEnabled }: SideNavProps) {
           <NavLink
             key={item.label}
             to={item.href}
-            state={clientPrefs.lastLessonsView}
             className={({ isActive }) =>
               clsx([
                 { "bg-gray-100 text-gray-900": isActive },

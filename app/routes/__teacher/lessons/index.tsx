@@ -1,10 +1,8 @@
-import { ActionArgs, redirect } from "@remix-run/node";
-import { useLocation, useNavigate } from "@remix-run/react";
-import { useLayoutEffect } from "react";
+import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
 import { safeRedirect } from "remix-utils";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
-import { useClientPrefs } from "~/utils/client-prefs";
+import { getClientPreferences } from "~/utils/client-prefs.server";
 
 export const action = async ({ request }: ActionArgs) => {
   throw new AppError({
@@ -75,8 +73,10 @@ export const action = async ({ request }: ActionArgs) => {
   // });
 };
 
-export const loader = async () => {
-  return redirect(safeRedirect("/lessons/calendar", "/"));
+export const loader = async ({ request }: LoaderArgs) => {
+  const clientPrefs = await getClientPreferences(request);
+  const lastLessonsView = clientPrefs.lastLessonsView || "calendar";
+  return redirect(safeRedirect(`/lessons/${lastLessonsView}`, "/"));
 };
 
 // export const loader = async ({ request }: LoaderArgs) => {
@@ -101,20 +101,6 @@ export const loader = async () => {
 //   return redirect(safeRedirect("/lessons/calendar", "/"));
 // };
 
-export default function LessonsIndexPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const clientPrefs = useClientPrefs();
-  const selectedView = ["calendar", "list"].includes(location.state)
-    ? location.state
-    : clientPrefs.lastLessonsView || "calendar";
-
-  useLayoutEffect(() => {
-    navigate(`/lessons/${selectedView}`, { replace: true });
-  }, []);
-
-  return null;
-}
 // export default function CalendarPage() {
 //   const loaderData = useLoaderData<typeof loader>();
 //   const actionData = useActionData<typeof action>();
