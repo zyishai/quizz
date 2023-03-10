@@ -15,5 +15,6 @@ export enum ErrorType {
   LessonUpdateFailed = 'LessonUpdateFailed',
   CreditNotFound = 'CreditNotFound',
   InvalidOrMissingPaymentInformation = 'InvalidOrMissingPaymentInformation',
+  InvalidGrade = 'InvalidGrade',
   Other = 'Other'
 }

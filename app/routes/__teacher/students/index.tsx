@@ -9,6 +9,8 @@ import { formatPhoneNumber } from "~/utils/phone-number";
 import { deleteExistingStudent, getStudents } from "~/handlers/students.server";
 import { isAppError } from "~/utils/app-error";
 import { ErrorType } from "~/types/errors";
+import { IconUserPlus } from "@tabler/icons-react";
+import { formatGrade } from "~/utils/format";
 
 export const action = async ({ request }: ActionArgs) => {
   if (!(await deleteExistingStudent(request))) {
@@ -47,30 +49,31 @@ export default function ListStudents() {
   return (
     <>
       <header className="flex flex-row items-center justify-between border-b border-gray-200 py-2 pb-4">
-        <h1 className="text-2xl font-semibold leading-none text-gray-900">
+        <h1 className="text-xl font-medium leading-none text-gray-900">
           התלמידים שלי
         </h1>
         <Link
           to="new"
-          className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-2.5 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:inline-flex"
+          className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:inline-flex"
         >
-          <PlusIcon
+          <IconUserPlus
             className="h-4 w-4 ltr:mr-2 ltr:-ml-0.5 rtl:ml-2 rtl:-mr-0.5"
             aria-hidden="true"
           />
           <span>הוסף תלמיד</span>
         </Link>
       </header>
+
       {students.length > 0 ? (
         <>
           {/* Students list (only on smallest breakpoint) */}
-          <div className="my-5 flex-1 overflow-y-scroll sm:hidden">
+          <div className="mb-5 flex-1 overflow-y-scroll sm:hidden">
             <ul role="list" className="divide-y divide-gray-100">
               {students.map((student) => (
                 <li key={student.id}>
                   <Link
                     to={student.id}
-                    className="group flex items-center justify-between py-4 px-4 hover:bg-gray-50 sm:px-6"
+                    className="group flex items-center justify-between py-4 px-0 hover:bg-gray-50 sm:px-6"
                   >
                     <span className="flex items-center space-x-3 truncate rtl:space-x-reverse">
                       <Avvvatars
@@ -81,9 +84,14 @@ export default function ListStudents() {
                         borderSize={0}
                         borderColor="transparent; filter: brightness(0.95)"
                       />
-                      <span className="truncate text-sm font-medium leading-6">
-                        {student.fullName}
-                      </span>
+                      <div>
+                        <h2 className="truncate font-medium leading-6">
+                          {student.fullName}
+                        </h2>
+                        <p className="truncate text-sm text-gray-600">
+                          {formatGrade(student.grade)}
+                        </p>
+                      </div>
                     </span>
                     <ChevronLeftIcon
                       className="h-5 w-5 text-gray-400 group-hover:text-gray-500 ltr:ml-4 rtl:mr-4"
@@ -96,31 +104,37 @@ export default function ListStudents() {
           </div>
 
           {/* Students table (small breakpoint and up) */}
-          <div className="mt-8 hidden flex-1 overflow-hidden sm:block">
+          <div className="hidden flex-1 overflow-hidden sm:block">
             <div className="block h-full min-w-full overflow-y-scroll border-b border-gray-200 align-middle">
               <table className="min-w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-20">
                   <tr>
                     <th
-                      className="border-b border-t border-gray-200 bg-gray-50 px-6 py-3 text-sm font-semibold text-gray-900 ltr:text-left rtl:text-right"
+                      className="border-b border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-900 ltr:text-left rtl:text-right"
                       scope="col"
                     >
                       <span className="lg:ltr:pl-2 lg:rtl:pr-2">תלמיד</span>
                     </th>
                     <th
-                      className="border-b border-t border-gray-200 bg-gray-50 px-6 py-3 text-sm font-semibold text-gray-900 ltr:text-left rtl:text-right"
+                      className="border-b border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-900 ltr:text-left rtl:text-right"
+                      scope="col"
+                    >
+                      כיתה
+                    </th>
+                    <th
+                      className="border-b border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-900 ltr:text-left rtl:text-right"
                       scope="col"
                     >
                       אנשי קשר
                     </th>
                     <th
-                      className="hidden border-b border-t border-gray-200 bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900 md:table-cell"
+                      className="hidden border-b border-gray-200 bg-white px-6 py-3 text-right text-sm font-semibold text-gray-900 md:table-cell"
                       scope="col"
                     >
                       עדכון אחרון
                     </th>
                     <th
-                      className="border-b border-t border-gray-200 bg-gray-50 py-3 pr-6 text-right text-sm font-semibold text-gray-900"
+                      className="border-b border-gray-200 bg-white py-3 pr-6 text-right text-sm font-semibold text-gray-900"
                       scope="col"
                     />
                   </tr>
@@ -145,12 +159,15 @@ export default function ListStudents() {
                           </p>
                         </div>
                       </td>
+                      <td className="hidden whitespace-nowrap border-b border-gray-100 px-6 py-3 text-right text-sm text-gray-500 md:table-cell">
+                        {formatGrade(student.grade)}
+                      </td>
                       <td className="border-b border-gray-100 py-3 px-6 text-sm font-medium text-gray-500">
                         <ul className="space-y-2 truncate">
                           {student?.contacts?.map((contact) => (
                             <li
                               key={contact.id}
-                              className="hover:text-indigo-700"
+                              className="text-blue-600 hover:text-blue-700"
                             >
                               <Link to={`/contacts/${contact.id}`}>
                                 {contact.fullName}
@@ -212,18 +229,30 @@ export default function ListStudents() {
         </>
       ) : (
         <>
-          <div className="mt-4 flex-1">
-            <h2 className="text-sm text-gray-500">
-              אין מה להציג. הוסף תלמידים כדי לראות אותם כאן.
+          <div className="mt-4 flex flex-1 flex-col items-center sm:block">
+            <img
+              src="/illustrations/no-data.svg"
+              alt="no data"
+              className="h-40 w-auto opacity-40 sm:hidden"
+            />
+            <h2 className="mt-5 text-base text-gray-500 sm:mt-0 sm:inline-block sm:ltr:mr-1 sm:rtl:ml-1">
+              אופס.. אין תלמידים.
             </h2>
+            <span className="text-gray-500">
+              <Link to="new" className="text-amber-500">
+                הוסף תלמיד
+              </Link>{" "}
+              כדי להציג אותו כאן
+            </span>
           </div>
         </>
       )}
+
       <Link
         to="new"
         className="mb-2 inline-flex items-center justify-center rounded-md border border-transparent bg-amber-500 px-2.5 py-3 font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:hidden"
       >
-        <PlusIcon
+        <IconUserPlus
           className="h-5 w-5 ltr:mr-2 ltr:-ml-0.5 rtl:ml-2 rtl:-mr-0.5"
           aria-hidden="true"
         />

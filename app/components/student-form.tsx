@@ -4,16 +4,16 @@ import {
   PhoneIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { Form, Link } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import { useRef, useState } from "react";
 import { Contact, ContactDraft, Grade } from "~/types/student";
 import { grades } from "~/utils/grades";
 
 interface StudentFormProps {
+  id: string;
   fields?: FormFields;
   fieldErrors?: FormFieldErrors;
   existingContacts?: Contact[];
-  back: string | (() => void);
 }
 interface FormFields {
   fullName?: string;
@@ -27,10 +27,10 @@ interface FormFieldErrors {
 }
 
 export default function StudentForm({
+  id,
   fields,
   fieldErrors,
   existingContacts = [],
-  back,
 }: StudentFormProps) {
   const contactIdRef = useRef<number>(0);
   const [contacts, setContacts] = useState(fields?.contacts || []);
@@ -47,6 +47,7 @@ export default function StudentForm({
   };
   return (
     <Form
+      id={id}
       method="post"
       replace
       className="mb-6 grid max-w-[672px] grid-cols-6 gap-6"
@@ -54,7 +55,7 @@ export default function StudentForm({
       <div className="col-span-6">
         <label
           htmlFor="fullName"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-semibold text-gray-700"
         >
           שם מלא
         </label>
@@ -90,7 +91,7 @@ export default function StudentForm({
       <div className="col-span-6">
         <label
           htmlFor="grade"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-semibold text-gray-700"
         >
           כיתה
         </label>
@@ -126,8 +127,11 @@ export default function StudentForm({
       </div>
 
       <div className="col-span-6">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          אנשי קשר
+        <label className="mb-1 block text-sm font-semibold text-gray-700">
+          אנשי קשר{" "}
+          <span className="font-medium text-gray-800">
+            (יש להוסיף לפחות איש קשר אחד)
+          </span>
         </label>
 
         <fieldset
@@ -226,31 +230,6 @@ export default function StudentForm({
           </p>
         ) : null}
       </div>
-
-      <div className="col-span-6 flex flex-col justify-end space-y-3 space-y-reverse rtl:space-x-reverse sm:flex-row sm:space-y-0 sm:space-x-3">
-        {typeof back === "string" ? (
-          <Link
-            to={back}
-            className="order-2 rounded-md border border-gray-300 bg-white py-2.5 px-4 text-center font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:py-2 sm:text-sm"
-          >
-            ביטול
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={back}
-            className="order-2 rounded-md border border-gray-300 bg-white py-2.5 px-4 text-center font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:py-2 sm:text-sm"
-          >
-            ביטול
-          </button>
-        )}
-        <button
-          type="submit"
-          className="order-1 inline-flex justify-center rounded-md border border-transparent bg-amber-500 py-2.5 px-4 font-medium text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:order-3 sm:py-2 sm:text-sm"
-        >
-          שמור שינויים
-        </button>
-      </div>
     </Form>
   );
 }
@@ -267,7 +246,10 @@ function NewContactFieldset({
   return (
     <fieldset className="relative col-span-6 grid gap-3 rounded-md border-2 border-dashed border-gray-300 p-4 pt-4">
       <legend className="absolute flex -translate-y-1/2 items-center bg-white ltr:right-3 rtl:left-3">
-        <button onClick={() => onRemove(contact.id)}>
+        <button
+          onClick={() => onRemove(contact.id)}
+          className="rounded-md bg-red-100 hover:bg-red-400 hover:text-white"
+        >
           <XMarkIcon className="h-5 w-5" />
         </button>
       </legend>
@@ -275,7 +257,7 @@ function NewContactFieldset({
       <input
         type="hidden"
         name={`contact[${index}]['type']`}
-        value={contact.type}
+        value={contact.type || "new"}
       />
       <input
         type="hidden"
@@ -402,7 +384,10 @@ function ExistingContactFieldset({
   return (
     <fieldset className="relative col-span-6 grid gap-3 rounded-md border-2 border-dashed border-gray-300 p-4 pt-4">
       <legend className="absolute flex -translate-y-1/2 items-center bg-white ltr:right-3 rtl:left-3">
-        <button onClick={() => onRemove(contact.id)}>
+        <button
+          onClick={() => onRemove(contact.id)}
+          className="rounded-md bg-red-100 hover:bg-red-400 hover:text-white"
+        >
           <XMarkIcon className="h-5 w-5" />
         </button>
       </legend>
@@ -410,7 +395,7 @@ function ExistingContactFieldset({
       <input
         type="hidden"
         name={`contact[${index}]['type']`}
-        value={contact.type}
+        value={contact.type || "existing"}
       />
       <div>
         <label

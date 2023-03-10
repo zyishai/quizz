@@ -1,15 +1,12 @@
-import {
-  ArrowLongRightIcon,
-  MapPinIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
+import { MapPinIcon } from "@heroicons/react/24/outline";
 import { json, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import { grades } from "~/utils/grades";
 import { requireMobile } from "~/utils/mobile.server";
 import { getStudent } from "~/handlers/students.server";
 import StudentAvatar from "~/components/student-avatar";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import { IconPencil, IconTrashX } from "@tabler/icons-react";
+import { formatGrade } from "~/utils/format";
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   await requireMobile(request);
@@ -22,26 +19,22 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 
 export default function StudentDetails() {
   const { student } = useLoaderData<typeof loader>();
-  const grade = grades.find((grade) => grade.value === student.grade)?.label;
+  const grade = formatGrade(student.grade);
 
   return (
     <>
-      <header className="px-4">
-        <nav className="flex" aria-label="ניווט חזרה">
-          <div className="flex">
-            <Link
-              to="/students"
-              className="group inline-flex space-x-3 text-sm font-medium text-gray-500 hover:text-gray-700 rtl:space-x-reverse"
-            >
-              <ArrowLongRightIcon
-                className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-600"
-                aria-hidden="true"
-              />
-              <span>חזרה לרשימת התלמידים</span>
-            </Link>
-          </div>
-        </nav>
+      <header className="border-b border-gray-200 px-4 pb-2">
+        <h1 className="flex items-center text-lg text-gray-800">
+          <Link
+            to="/students"
+            className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
+          >
+            <ArrowRightIcon className="h-5 w-auto" />
+          </Link>
+          <span>פרטי תלמיד</span>
+        </h1>
       </header>
+
       <main className="mt-6 flex flex-1 flex-col overflow-hidden px-4">
         <section className="flex">
           <div className="flex-shrink-0 ltr:mr-3 rtl:ml-3">
@@ -52,39 +45,7 @@ export default function StudentDetails() {
             <p className="text-gray-500">{grade}</p>
           </div>
         </section>
-        <div className="justify-stretch mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-          <Link
-            to={`/students/${student.id}/edit`}
-            className="inline-flex justify-center rounded-md border border-indigo-700 bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <PencilIcon
-              className="h-5 w-5 text-white ltr:-ml-1 ltr:mr-2 rtl:-mr-1 rtl:ml-2"
-              aria-hidden="true"
-            />
-            <span>עריכת פרטי התלמיד</span>
-          </Link>
-          <Form method="post" action="/students?index" className="w-full">
-            <input type="hidden" name="studentId" value={student.id} />
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-md border border-red-400 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              onClick={(e) => {
-                if (!confirm("האם ברצונך למחוק את התלמיד?")) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  return false;
-                }
-                return true;
-              }}
-            >
-              <TrashIcon
-                className="h-5 w-5 text-red-400 ltr:-ml-1 ltr:mr-2 rtl:-mr-1 rtl:ml-2"
-                aria-hidden="true"
-              />
-              <span>מחק תלמיד</span>
-            </button>
-          </Form>
-        </div>
+
         <div className="mt-6 flow-root flex-1 overflow-hidden">
           <h1 className="mb-1 text-sm font-semibold text-gray-500">אנשי קשר</h1>
           <ul
@@ -96,7 +57,7 @@ export default function StudentDetails() {
                 <div className="flex items-center space-x-4 rtl:space-x-reverse">
                   <div className="min-w-0 flex-1">
                     <Link to={`/contacts/${contact.id}`}>
-                      <p className="truncate text-base font-medium text-indigo-800">
+                      <p className="truncate text-base font-medium text-blue-700">
                         {contact.fullName}
                       </p>
                     </Link>
@@ -134,6 +95,53 @@ export default function StudentDetails() {
           </ul>
         </div>
       </main>
+
+      <footer className="mt-4 mb-2">
+        <div className="justify-stretch flex flex-wrap">
+          <Link
+            to="edit"
+            className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-3 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+          >
+            <IconPencil
+              className="h-5 w-auto ltr:mr-2 rtl:ml-2"
+              aria-hidden="true"
+            />
+            <span className="whitespace-nowrap text-base">
+              עריכת פרטי תלמיד
+            </span>
+          </Link>
+
+          <Form
+            method="post"
+            action="/students?index"
+            className="ltr:ml-4 rtl:mr-4 sm:ltr:ml-0 sm:rtl:mr-0"
+          >
+            <input type="hidden" name="studentId" value={student.id} />
+            <button
+              type="submit"
+              className="flex w-full justify-center rounded-md border border-red-400 bg-red-50 p-3 text-sm font-medium text-red-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              onClick={(e) => {
+                if (!confirm("האם ברצונך למחוק את התלמיד?")) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }
+                return true;
+              }}
+            >
+              <IconTrashX className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <span className="sr-only">מחק תלמיד</span>
+            </button>
+          </Form>
+
+          <Link
+            to="/students"
+            className="mt-5 basis-full rounded-md bg-white text-center text-base font-medium text-orange-500 shadow-none hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:text-sm"
+          >
+            חזרה לתלמידים
+          </Link>
+        </div>
+      </footer>
     </>
   );
 }

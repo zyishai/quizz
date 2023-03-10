@@ -134,7 +134,7 @@ export default function LessonsListView() {
       <header className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
         <div className="-mt-2 flex flex-wrap items-center ltr:-ml-4 rtl:-mr-4 sm:flex-nowrap">
           <div className="mt-2 ltr:ml-4 rtl:mr-4">
-            <h3 className="text-xl font-medium leading-6 text-gray-700">
+            <h3 className="text-lg font-medium leading-6 text-gray-700 sm:text-xl">
               שיעורים מתאריך{" "}
               <span className="font-semibold text-gray-800">
                 {dayjs(range.start).format("DD.MM.YYYY")}

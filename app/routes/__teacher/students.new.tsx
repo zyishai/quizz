@@ -1,5 +1,5 @@
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { Link, useActionData, useLoaderData } from "@remix-run/react";
 import StudentForm from "~/components/student-form";
 import { requireUserId } from "~/utils/session.server";
 import { getContacts } from "~/handlers/contacts.server";
@@ -99,21 +99,31 @@ export default function AddNewStudent() {
 
   return (
     <>
-      <div className="overflow-auto px-2 pb-2">
-        <header className="mb-4 sm:mb-5">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
-            הוספת תלמיד חדש
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            מלא את פרטי התלמיד בטופס בבקשה.
-          </p>
-        </header>
-        <StudentForm
-          fields={actionData?.fields}
-          fieldErrors={actionData?.fieldErrors || undefined}
-          existingContacts={contacts}
-          back="/students"
-        />
+      <div className="flex flex-1 flex-col overflow-auto px-2 pb-2">
+        <div className="flex-1 overflow-auto sm:flex-none">
+          <StudentForm
+            id="new-student-form"
+            fields={actionData?.fields}
+            fieldErrors={actionData?.fieldErrors || undefined}
+            existingContacts={contacts}
+          />
+        </div>
+
+        <div className="mt-6 flex max-w-[672px] flex-col justify-end space-y-5 space-y-reverse rtl:space-x-reverse sm:flex-row sm:items-center sm:space-y-0 sm:space-x-5">
+          <Link
+            to="/students"
+            className="order-2 rounded-md border-0 border-gray-300 bg-white text-center font-medium text-orange-500 shadow-none hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:text-sm"
+          >
+            חזרה לרשימת תלמידים
+          </Link>
+          <button
+            type="submit"
+            form="new-student-form"
+            className="order-1 inline-flex justify-center rounded-md border border-transparent bg-amber-500 py-2.5 px-4 font-medium text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:order-3 sm:py-2 sm:text-sm"
+          >
+            הוסף תלמיד
+          </button>
+        </div>
       </div>
     </>
   );

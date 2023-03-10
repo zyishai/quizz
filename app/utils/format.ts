@@ -1,5 +1,7 @@
 import dayjs from "dayjs"
+import { ErrorType } from "~/types/errors"
 import { PaymentMethod } from "~/types/payment"
+import { AppError } from "./app-error"
 
 export const formatDuration = (duration: number) => {
   switch(duration) {
@@ -47,4 +49,47 @@ export const formatPaymentMethod = (method?: PaymentMethod) => {
 }
 export const formatDateAndTime = (datetime: string | Date) => {
   return dayjs(datetime).format('DD.MM.YYYY, HH:mm');
+}
+export const formatGrade = (grade: number) => {
+  switch(grade) {
+    case 1: {
+      return 'כיתה א'
+    }
+    case 2: {
+      return 'כיתה ב'
+    }
+    case 3: {
+      return 'כיתה ג'
+    }
+    case 4: {
+      return 'כיתה ד'
+    }
+    case 5: {
+      return 'כיתה ה'
+    }
+    case 6: {
+      return 'כיתה ו'
+    }
+    case 7: {
+      return 'כיתה ז'
+    }
+    case 8: {
+      return 'כיתה ח'
+    }
+    case 9: {
+      return 'כיתה ט'
+    }
+    case 10: {
+      return 'כיתה י'
+    }
+    case 11: {
+      return 'כיתה יא'
+    }
+    case 12: {
+      return 'כיתה יב'
+    }
+    default: {
+      throw new AppError({ errType: ErrorType.InvalidGrade });
+    }
+  }
 }
