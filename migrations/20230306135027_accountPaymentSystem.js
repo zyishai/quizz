@@ -32,26 +32,36 @@ exports.migrate = async (client) => {
     const contactIds = student.contacts;
     const teacherId = student.teacherIds[0];
 
-    const [account] = await db.query(
-      `create paymentAccount content {
-      balance: <future>{ math::sum(payments.sum) - math::sum((select price from lesson where $parent.students contains student)) },
-      transactions: <future>{ array::sort::asc(
-        array::concat(
-          payments,
-          (select {type: 'DEBIT', id: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student)
-        )
-      ) },
-      payments: [],
-      students: $students,
-      contacts: $contacts,
-      teacher: $teacherId,
-      createdAt: time::now()
-    }`,
-      { students: [studentId], contacts: contactIds, teacherId }
+    const [existingAccount] = await db.query(
+      "select * from paymentAccount where students contains $studentId",
+      { studentId: student.id }
     );
+    if (existingAccount.error) {
+      throw existingAccount.error;
+    }
 
-    if (account.error) {
-      throw account.error;
+    if (existingAccount.result.length === 0) {
+      const [account] = await db.query(
+        `create paymentAccount content {
+        balance: <future>{ math::sum(payments.sum) - math::sum((select price from lesson where $parent.students contains student)) },
+        transactions: <future>{ array::sort::asc(
+          array::concat(
+            payments,
+            (select {type: 'DEBIT', id: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student)
+          )
+        ) },
+        payments: [],
+        students: $students,
+        contacts: $contacts,
+        teacher: $teacherId,
+        createdAt: time::now()
+      }`,
+        { students: [studentId], contacts: contactIds, teacherId }
+      );
+
+      if (account.error) {
+        throw account.error;
+      }
     }
   }
 };
