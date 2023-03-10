@@ -36,5 +36,7 @@ export type UpdateStudentDto = {
   teacherId: string;
   fullName?: string;
   grade?: Grade;
+  accountType: 'new' | 'existing';
+  paymentAccountId?: string;
   contacts: CreateContactDto[];
 }

@@ -46,6 +46,7 @@ export const constructNewStudentDto: (request: Request) => Promise<CreateStudent
       assertString(fullName);
       const grade = Number(formData.get('grade'));
       assertGrade(grade);
+      const paymentAccountId = formData.get('paymentAccountId')?.toString();
       const contacts: CreateContactDto[] = [];
       let id = 0;
       let contact;
@@ -58,7 +59,8 @@ export const constructNewStudentDto: (request: Request) => Promise<CreateStudent
         teacherId,
         fullName,
         grade,
-        contacts
+        contacts,
+        paymentAccountId
       }
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
@@ -117,6 +119,7 @@ export const constructUpdateStudentDto: (request: Request, studentId?: string) =
       assertString(fullName);
       const grade = Number(formData.get('grade'));
       assertGrade(grade);
+      const paymentAccountId = formData.get('paymentAccountId')?.toString();
       const contacts: CreateContactDto[] = [];
       let id = 0;
       let contact;
@@ -130,7 +133,9 @@ export const constructUpdateStudentDto: (request: Request, studentId?: string) =
         teacherId,
         fullName,
         grade,
-        contacts
+        accountType: !!paymentAccountId ? 'existing' : 'new',
+        paymentAccountId,
+        contacts,
       }
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });

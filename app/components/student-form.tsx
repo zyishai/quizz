@@ -6,18 +6,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { Form } from "@remix-run/react";
 import { useRef, useState } from "react";
-import { Contact, ContactDraft, Grade } from "~/types/student";
+import { PaymentAccount } from "~/types/payment-account";
+import { Contact, ContactDraft, Grade, Student } from "~/types/student";
 import { grades } from "~/utils/grades";
+import { hasStudentFetched } from "~/utils/misc";
 
 interface StudentFormProps {
   id: string;
   fields?: FormFields;
   fieldErrors?: FormFieldErrors;
   existingContacts?: Contact[];
+  existingPaymentAccounts?: PaymentAccount[];
 }
 interface FormFields {
   fullName?: string;
   grade?: Grade;
+  paymentAccountId?: string;
   contacts?: Array<ContactDraft>;
 }
 interface FormFieldErrors {
@@ -31,6 +35,7 @@ export default function StudentForm({
   fields,
   fieldErrors,
   existingContacts = [],
+  existingPaymentAccounts = [],
 }: StudentFormProps) {
   const contactIdRef = useRef<number>(0);
   const [contacts, setContacts] = useState(fields?.contacts || []);
@@ -45,6 +50,9 @@ export default function StudentForm({
       savedContacts.filter((contact) => contact.id !== contactId)
     );
   };
+  const [showAccountSelector, setShowAccountSelector] = useState(
+    !!fields?.paymentAccountId
+  );
   return (
     <Form
       id={id}
@@ -124,6 +132,76 @@ export default function StudentForm({
             {fieldErrors?.grade}
           </p>
         ) : null}
+      </div>
+
+      <div className="col-span-6">
+        <label className="block text-sm font-semibold text-gray-700">
+          חשבון תשלום
+        </label>
+        <p className="text-sm text-gray-500">
+          חשבון תשלום זו הכרטיסיה הדיגיטלית של התלמיד. ניתן לשים מספר תלמידים
+          באותו החשבון (לדוגמא: אחים) אבל לא ניתן לשים את אותו התלמיד במספר
+          חשבונות.
+        </p>
+        <fieldset className="mt-4 ltr:pl-1 rtl:pr-1">
+          <legend className="sr-only">חשבון תשלום</legend>
+          <div className="space-y-4">
+            <div className="flex items-center">
+              <input
+                id="newAccount"
+                name="paymentAccount"
+                type="radio"
+                value="new"
+                defaultChecked={!fields?.paymentAccountId}
+                className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-600"
+                onChange={() => setShowAccountSelector(false)}
+              />
+              <label
+                htmlFor="newAccount"
+                className="block text-sm font-medium leading-6 text-gray-900 ltr:ml-3 rtl:mr-3"
+              >
+                צור חשבון חדש
+              </label>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="existingAccount"
+                name="paymentAccount"
+                type="radio"
+                value="existing"
+                defaultChecked={!!fields?.paymentAccountId}
+                className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-600"
+                onChange={() => setShowAccountSelector(true)}
+              />
+              <label
+                htmlFor="existingAccount"
+                className="block text-sm font-medium leading-6 text-gray-900 ltr:ml-3 rtl:mr-3"
+              >
+                בחר חשבון קיים
+              </label>
+            </div>
+            {showAccountSelector && (
+              <select
+                name="paymentAccountId"
+                id="paymentAccountId"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 disabled:bg-gray-50 ltr:ml-6 rtl:mr-6 sm:text-sm"
+                defaultValue={fields?.paymentAccountId}
+              >
+                {existingPaymentAccounts.map((account, index) => (
+                  <option key={account.id} value={account.id}>
+                    חשבון #{index + 1} - תלמידים:{" "}
+                    {account.students
+                      .map((student) =>
+                        typeof student !== "string" ? student.fullName : null
+                      )
+                      .join(", ")}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </fieldset>
       </div>
 
       <div className="col-span-6">

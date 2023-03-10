@@ -3,7 +3,7 @@ import { Credit, PaymentMethod } from "~/types/payment";
 import { Contact, CreateContactDto, CreateStudentDto, Grade, Student, UpdateContactDto, UpdateStudentDto } from "~/types/student";
 import { truthy } from "~/utils/misc";
 import { getDatabaseInstance } from "./db.adapter";
-import { addStudentToPaymentAccount, createPaymentAccount } from "./payment.adapter";
+import { addStudentToPaymentAccount, createPaymentAccount, moveStudentToPaymentAccount } from "./payment.adapter";
 
 // Module level types
 
@@ -145,7 +145,7 @@ export async function createStudent(dto: CreateStudentDto): Promise<Student | nu
   }
 }
 
-export async function updateStudent({ studentId, teacherId, ...updateData }: UpdateStudentDto): Promise<Student | null> {
+export async function updateStudent({ studentId, teacherId, accountType, paymentAccountId, ...updateData }: UpdateStudentDto): Promise<Student | null> {
   const db = await getDatabaseInstance();
   const contacts = await getContactIds(updateData.contacts, teacherId);
   const student = await db.change<StudentResponse, {}>(studentId, {
@@ -155,6 +155,13 @@ export async function updateStudent({ studentId, teacherId, ...updateData }: Upd
   if (Array.isArray(student)) {
     return null;
   } else {
+    if (accountType === 'new') {
+      // remove student from existing payment account and create new payment account
+      await moveStudentToPaymentAccount({ teacherId, studentId })
+    } else {
+      await moveStudentToPaymentAccount({ teacherId, studentId, accountId: paymentAccountId });
+    }
+
     return mapToStudent(student);
   }
 }

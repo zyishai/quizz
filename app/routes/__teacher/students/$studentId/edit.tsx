@@ -7,6 +7,7 @@ import {
   serverError,
   unauthorized,
 } from "remix-utils";
+import isMobile from "ismobilejs";
 import StudentForm from "~/components/student-form";
 import { getContacts } from "~/handlers/contacts.server";
 import {
@@ -16,7 +17,9 @@ import {
 } from "~/handlers/students.server";
 import { ErrorType } from "~/types/errors";
 import { AppError, isAppError } from "~/utils/app-error";
-import { requireUserId } from "~/utils/session.server";
+import { getUserId, requireUserId } from "~/utils/session.server";
+import { getTeacherByUserId } from "~/adapters/teacher.adapter";
+import { getPaymentAccountsList } from "~/handlers/payments.server";
 
 // function validateFullName(name?: string) {
 //   if (!name) {
@@ -69,36 +72,43 @@ export const action = async ({ request, params }: ActionArgs) => {
     throw new AppError({ errType: ErrorType.StudentUpdateFailed });
   }
 
-  return redirect(safeRedirect(`/students/${studentId}`, "/"));
+  const userAgent = request.headers.get("user-agent");
+  const { any: isMobilePhone } = isMobile(userAgent || undefined);
+  return redirect(
+    safeRedirect(isMobilePhone ? `/students/${studentId}` : "/students", "/")
+  );
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  await requireUserId(request);
-  try {
-    const contacts = await getContacts(request);
-    const { studentId } = params;
-    const student = await getStudent(studentId);
-    return json({ contacts, student });
-  } catch (error) {
-    if (isAppError(error)) {
-      switch (error.name) {
-        case ErrorType.UserNotFound: {
-          throw unauthorized({ message: "המשתמש לא מחובר" });
-        }
-        case ErrorType.TeacherNotFound: {
-          throw forbidden({ message: "המשתמש לא רשום כמורה במערכת" });
-        }
-      }
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const contacts = await getContacts(request);
+      const { studentId } = params;
+      const student = await getStudent(studentId);
+      const userAgent = request.headers.get("user-agent");
+      const { any: isMobilePhone } = isMobile(userAgent || undefined);
+      const paymentAccounts = await getPaymentAccountsList(teacher.id);
+      return json({ contacts, student, isMobilePhone, paymentAccounts });
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
-    throw serverError({
-      message: "אירעה שגיאה בשרת. אנא נסו שנית במועד מאוחר יותר",
-    });
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
   }
 };
 
 export default function EditStudent() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const paymentAccountId = loaderData.paymentAccounts.find((account) =>
+    account.students.some((student) => {
+      return typeof student === "string"
+        ? student === loaderData.student.id
+        : student.id === loaderData.student.id;
+    })
+  )?.id;
 
   return (
     <>
@@ -106,18 +116,31 @@ export default function EditStudent() {
         <div className="flex-1 overflow-auto sm:flex-none">
           <StudentForm
             id="update-student-form"
-            fields={actionData?.fields || loaderData?.student || undefined}
+            fields={
+              actionData?.fields || {
+                ...loaderData?.student,
+                paymentAccountId,
+              } ||
+              undefined
+            }
             fieldErrors={actionData?.fieldErrors || undefined}
             existingContacts={loaderData.contacts}
+            existingPaymentAccounts={loaderData.paymentAccounts}
           />
         </div>
 
         <div className="mt-6 flex max-w-[672px] flex-col justify-end space-y-5 space-y-reverse rtl:space-x-reverse sm:flex-row sm:items-center sm:space-y-0 sm:space-x-5">
           <Link
-            to={`/students/${loaderData.student.id}`}
+            to={
+              loaderData.isMobilePhone
+                ? `/students/${loaderData.student.id}`
+                : "/students"
+            }
             className="order-2 rounded-md border-0 border-gray-300 bg-white text-center font-medium text-orange-500 shadow-none hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:text-sm"
           >
-            חזרה לפרטי תלמיד
+            {loaderData.isMobilePhone
+              ? "חזרה לפרטי תלמיד"
+              : "חזרה לרשימת התלמידים"}
           </Link>
           <button
             type="submit"

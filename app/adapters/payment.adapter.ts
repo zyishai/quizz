@@ -2,6 +2,7 @@ import { Result } from "surrealdb.js";
 import { PaymentMethod } from "~/types/payment";
 import { PaymentAccount, TransactionType } from "~/types/payment-account";
 import { getDatabaseInstance } from "./db.adapter";
+import { findStudentById } from "./student.adapter";
 
 type CreatePaymentAccountDto = {
   students: string[];
@@ -69,6 +70,17 @@ export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?:
   return accounts.result;
 }
 
+export async function fetchPaymentAccountByStudentId(studentId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+
+  const [account] = await db.query<Result<PaymentAccount[]>[]>('select * from paymentAccount where students contains $studentId', { studentId });
+  if (account.error) {
+    throw account.error;
+  }
+
+  return account.result[0];
+}
+
 type AddStudentToAccountProps = {
   accountId: string;
   studentId: string;
@@ -83,6 +95,45 @@ export async function addStudentToPaymentAccount({ accountId, studentId, contact
   }
 
   return account.result.length > 0 ? account.result[0] : null;
+}
+
+type MoveStudentToAccountProps = {
+  teacherId: string;
+  studentId: string;
+  accountId?: string;
+}
+export async function moveStudentToPaymentAccount({ teacherId, studentId, accountId }: MoveStudentToAccountProps): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+
+  const existingAccount = await fetchPaymentAccountByStudentId(studentId);
+  if (!existingAccount) {
+    return null;
+  }
+
+  const [updatedAccount] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set students -= $studentId', { accountId: existingAccount.id, studentId });
+  if (updatedAccount.error) {
+    throw updatedAccount.error;
+  }
+  if (updatedAccount.result[0].students.length === 0) {
+    if (!await deletePaymentAccountById(updatedAccount.result[0].id)) {
+      return null;
+    }
+  }
+
+  if (accountId) {
+    const [account] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set students += $studentId', { accountId, studentId });
+    if (account.error) {
+      throw account.error;
+    }
+    return account.result[0];
+  } else {
+    const student = await findStudentById(studentId);
+    if (!student) {
+      return null;
+    }
+    const paymentAccount = await createPaymentAccount({ teacherId, students: [studentId], contacts: student.contacts as unknown as string[] })
+    return paymentAccount;
+  }
 }
 
 type MakePaymentDto = {

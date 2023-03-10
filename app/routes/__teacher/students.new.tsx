@@ -1,7 +1,7 @@
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Link, useActionData, useLoaderData } from "@remix-run/react";
 import StudentForm from "~/components/student-form";
-import { requireUserId } from "~/utils/session.server";
+import { getUserId, requireUserId } from "~/utils/session.server";
 import { getContacts } from "~/handlers/contacts.server";
 import { AppError, isAppError } from "~/utils/app-error";
 import {
@@ -16,6 +16,8 @@ import {
   constructNewStudentDto,
   createNewStudent,
 } from "~/handlers/students.server";
+import { getPaymentAccountsList } from "~/handlers/payments.server";
+import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 
 // function validateFullName(name?: string) {
 //   if (!name) {
@@ -45,7 +47,7 @@ import {
 // }
 
 export const action = async ({ request }: ActionArgs) => {
-  const fields = await constructNewStudentDto(request);
+  const fields = await constructNewStudentDto(request.clone());
 
   const fieldErrors = {
     fullName: undefined,
@@ -71,31 +73,24 @@ export const action = async ({ request }: ActionArgs) => {
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  await requireUserId(request);
-
-  try {
-    const contacts = await getContacts(request);
-    return json({ contacts });
-  } catch (error) {
-    if (isAppError(error)) {
-      switch (error.name) {
-        case ErrorType.UserNotFound: {
-          throw unauthorized({ message: "המשתמש לא מחובר" });
-        }
-        case ErrorType.TeacherNotFound: {
-          throw forbidden({ message: "המשתמש לא רשום כמורה במערכת" });
-        }
-      }
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const contacts = await getContacts(request);
+      const paymentAccounts = await getPaymentAccountsList(teacher.id);
+      return json({ contacts, paymentAccounts });
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
-    throw serverError({
-      message: "אירעה שגיאה בשרת. אנא נסו שנית במועד מאוחר יותר",
-    });
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
   }
 };
 
 export default function AddNewStudent() {
   const actionData = useActionData<typeof action>();
-  const { contacts } = useLoaderData<typeof loader>();
+  const { contacts, paymentAccounts } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -106,6 +101,7 @@ export default function AddNewStudent() {
             fields={actionData?.fields}
             fieldErrors={actionData?.fieldErrors || undefined}
             existingContacts={contacts}
+            existingPaymentAccounts={paymentAccounts}
           />
         </div>
 
