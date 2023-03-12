@@ -3,12 +3,12 @@ import {
   ExclamationCircleIcon,
   PhoneIcon,
 } from "@heroicons/react/24/outline";
-import { Form, Link } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 
 interface ContactFormProps {
+  id: string;
   fields?: FormFields;
   fieldErrors?: FormFieldErrors;
-  back: string | (() => void);
 }
 interface FormFields {
   id?: string;
@@ -25,12 +25,13 @@ interface FormFieldErrors {
 }
 
 export default function ContactForm({
+  id,
   fields,
   fieldErrors,
-  back,
 }: ContactFormProps) {
   return (
     <Form
+      id={id}
       method="post"
       replace
       className="mb-6 grid max-w-[672px] grid-cols-6 gap-6"
@@ -206,7 +207,7 @@ export default function ContactForm({
         ) : null}
       </div>
 
-      <div className="col-span-6 flex flex-col justify-end space-y-3 space-y-reverse rtl:space-x-reverse sm:flex-row sm:space-y-0 sm:space-x-3">
+      {/* <div className="col-span-6 flex flex-col justify-end space-y-3 space-y-reverse rtl:space-x-reverse sm:flex-row sm:space-y-0 sm:space-x-3">
         {typeof back === "string" ? (
           <Link
             to={back}
@@ -229,7 +230,7 @@ export default function ContactForm({
         >
           שמור שינויים
         </button>
-      </div>
+      </div> */}
     </Form>
   );
 }

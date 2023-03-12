@@ -1,6 +1,8 @@
-import { ArrowLongRightIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { json, LoaderArgs } from "@remix-run/node";
-import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { IconPencil } from "@tabler/icons-react";
+import isMobile from "ismobilejs";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import StudentAvatar from "~/components/student-avatar";
 import { getContact } from "~/handlers/contacts.server";
@@ -21,7 +23,13 @@ export const loader = async ({ request, params }: LoaderArgs) => {
         throw new AppError({ errType: ErrorType.ContactNotFound });
       }
       const relatedStudents = await getContactRelatedStudents(contact.id);
-      return json({ contact, relatedStudents });
+      const userAgent = request.headers.get("user-agent");
+      const { any: isMobilePhone } = isMobile(userAgent || undefined);
+      return json({
+        contact,
+        relatedStudents,
+        isMobilePhone,
+      });
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
@@ -31,55 +39,41 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 };
 
 export default function ContactDetailsPage() {
-  const navigate = useNavigate();
   const { contact, relatedStudents } = useLoaderData<typeof loader>();
 
   return (
     <>
-      <header className="px-4">
-        <nav className="flex" aria-label="ניווט חזרה">
-          <Form action="/" method="get" className="flex">
-            <button
-              type="submit"
-              className="group inline-flex space-x-3 text-sm font-medium text-gray-500 hover:text-gray-700 rtl:space-x-reverse"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(-1);
-                return false;
-              }}
-            >
-              <ArrowLongRightIcon
-                className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-600"
-                aria-hidden="true"
-              />
-              <span>חזרה</span>
-            </button>
-          </Form>
-        </nav>
-      </header>
-      <main className="mt-6 flex flex-1 flex-col overflow-hidden px-4 py-1">
+      <main className="flex flex-1 flex-col overflow-hidden px-4 py-1">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:space-x-5 sm:rtl:space-x-reverse">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {contact.fullName}
+          <h1 className="flex items-center text-2xl font-bold text-gray-900">
+            <Link
+              to="/students"
+              className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
+            >
+              <ArrowRightIcon className="h-5 w-auto" />
+            </Link>
+            <span>{contact.fullName}</span>
           </h1>
+
           <Link
             to="edit"
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+            className="hidden items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-3 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-100 sm:inline-flex"
           >
-            <PencilIcon
-              className="h-5 w-5 ltr:-ml-1 ltr:mr-2 rtl:-mr-1 rtl:ml-2"
+            <IconPencil
+              className="h-5 w-auto ltr:mr-2 rtl:ml-2"
               aria-hidden="true"
             />
-            <span>עריכת פרטי איש הקשר</span>
+            <span className="whitespace-nowrap text-base">
+              עריכת פרטי איש קשר
+            </span>
           </Link>
         </div>
 
-        <section aria-labelledby="contact-information-title">
+        <section className="flex-1" aria-labelledby="contact-information-title">
           <h1 id="contact-information-title" className="sr-only">
             פרטי איש הקשר
           </h1>
-          <div className="px-4 py-5 sm:px-0">
+          <div className="py-5">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <dt className="text-sm font-medium text-gray-500">
@@ -140,6 +134,28 @@ export default function ContactDetailsPage() {
             </dl>
           </div>
         </section>
+
+        <footer className="mt-4 mb-2 flex flex-col sm:hidden">
+          <Link
+            to="edit"
+            className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-3 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+          >
+            <IconPencil
+              className="h-5 w-auto ltr:mr-2 rtl:ml-2"
+              aria-hidden="true"
+            />
+            <span className="whitespace-nowrap text-base">
+              עריכת פרטי איש קשר
+            </span>
+          </Link>
+
+          <Link
+            to="/students"
+            className="mt-5 basis-full rounded-md bg-white text-center text-base font-medium text-orange-500 shadow-none hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:text-sm"
+          >
+            חזרה
+          </Link>
+        </footer>
       </main>
     </>
   );
