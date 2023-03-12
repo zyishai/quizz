@@ -24,7 +24,7 @@ RUN yarn --prod
 COPY --from=base /usr/app/public ./public
 COPY --from=base /usr/app/build ./build
 COPY --from=base --chmod=777 /usr/app/migrations ./migrations
-RUN chmod 777 /usr/app/migrations
+RUN chmod -R 777 /usr/app/migrations
 
 ENV NODE_ENV=production
 
