@@ -1,7 +1,5 @@
-import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import dayjs from "dayjs";
 import { useState } from "react";
 import { badRequest, redirectBack, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
@@ -9,10 +7,8 @@ import { finishLesson, getLesson } from "~/handlers/lessons.server";
 import { getCreditsForStudent } from "~/handlers/students.server";
 import { ErrorType } from "~/types/errors";
 import { PaymentMethod, PaymentStatus } from "~/types/payment";
-import { Student } from "~/types/student";
 import { AppError } from "~/utils/app-error";
-import { formatDate } from "~/utils/datetime";
-import { assertNumber, hasEventFetched } from "~/utils/misc";
+import { assertNumber } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
 export const action = async ({ request, params }: ActionArgs) => {

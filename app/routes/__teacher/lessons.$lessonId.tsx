@@ -1,4 +1,3 @@
-import { UserIcon } from "@heroicons/react/24/outline";
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -14,13 +13,13 @@ import isMobile from "ismobilejs";
 import { badRequest, namedAction } from "remix-utils";
 import clsx from "clsx";
 import {
+  ArrowRightIconSolid,
   IconCalendar,
   IconCalendarTime,
   IconPencil,
-  IconSquareRoundedCheckFilled,
   IconTrashX,
-} from "@tabler/icons-react";
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
+  UserIconOutline,
+} from "~/utils/icons";
 
 export const action = async ({ request, params }: ActionArgs) => {
   return namedAction(request, {
@@ -88,7 +87,7 @@ export default function LessonOverviewPage() {
             to="/lessons"
             className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
           >
-            <ArrowRightIcon className="h-5 w-auto" />
+            <ArrowRightIconSolid className="h-5 w-auto" />
           </Link>
           <span>פרטי שיעור</span>
         </h1>
@@ -207,7 +206,7 @@ export default function LessonOverviewPage() {
           {studentFetched && (
             <div className="py-4 sm:grid sm:grid-cols-[260px,_1fr] sm:gap-4 sm:py-5">
               <dt className="flex items-center text-sm font-semibold text-gray-400 sm:font-medium sm:text-gray-500">
-                <UserIcon
+                <UserIconOutline
                   className="h-4 w-auto ltr:mr-1 rtl:ml-1 sm:hidden"
                   strokeWidth={2}
                 />

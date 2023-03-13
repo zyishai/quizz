@@ -1,7 +1,6 @@
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { json, LoaderArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { IconPencil } from "@tabler/icons-react";
+import { IconPencil, ArrowRightIconOutline } from "~/utils/icons";
 import isMobile from "ismobilejs";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import StudentAvatar from "~/components/student-avatar";
@@ -50,7 +49,7 @@ export default function ContactDetailsPage() {
               to="/students"
               className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
             >
-              <ArrowRightIcon className="h-5 w-auto" />
+              <ArrowRightIconOutline className="h-5 w-auto" />
             </Link>
             <span>{contact.fullName}</span>
           </h1>

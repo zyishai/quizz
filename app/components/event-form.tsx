@@ -1,9 +1,9 @@
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { Form, useFetcher } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useRef } from "react";
 import { DateTimeString } from "~/types/misc";
 import { Student } from "~/types/student";
+import { ExclamationCircleIconOutline } from "~/utils/icons";
 
 const durations = [
   { value: 15, label: "רבע שעה" },
@@ -152,7 +152,7 @@ export default function EventForm({
             id="datetime-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -194,7 +194,7 @@ export default function EventForm({
             id="duration-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />

@@ -1,9 +1,9 @@
-import {
-  AtSymbolIcon,
-  ExclamationCircleIcon,
-  PhoneIcon,
-} from "@heroicons/react/24/outline";
 import { Form } from "@remix-run/react";
+import {
+  AtSymbolIconOutline,
+  ExclamationCircleIconOutline,
+  PhoneIconOutline,
+} from "~/utils/icons";
 
 interface ContactFormProps {
   id: string;
@@ -66,7 +66,7 @@ export default function ContactForm({
             id="fullname-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -103,7 +103,7 @@ export default function ContactForm({
             id="address-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -126,7 +126,10 @@ export default function ContactForm({
         </div>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 flex items-center ltr:left-0 ltr:pl-3 rtl:right-0 rtl:pr-3">
-            <PhoneIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <PhoneIconOutline
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="tel"
@@ -149,7 +152,7 @@ export default function ContactForm({
             id="phonenumber-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -172,7 +175,7 @@ export default function ContactForm({
         </div>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 flex items-center ltr:left-0 ltr:pl-3 rtl:right-0 rtl:pr-3">
-            <AtSymbolIcon
+            <AtSymbolIconOutline
               className="h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -198,7 +201,7 @@ export default function ContactForm({
             id="emailaddress-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />

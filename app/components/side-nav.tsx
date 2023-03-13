@@ -1,6 +1,6 @@
-import { PowerIcon } from "@heroicons/react/24/outline";
 import { Form, NavLink } from "@remix-run/react";
 import clsx from "clsx";
+import { PowerIconOutline } from "~/utils/icons";
 
 type NavItem = {
   label: string;
@@ -70,7 +70,7 @@ export default function SideNav({ navigation, proEnabled }: SideNavProps) {
           type="submit"
           className="group flex w-full cursor-pointer items-center rounded-md px-2 py-2 font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         >
-          <PowerIcon
+          <PowerIconOutline
             className="h-6 w-auto flex-shrink-0 text-gray-400 group-hover:text-gray-500 ltr:mr-3 rtl:ml-3"
             aria-hidden="true"
           />

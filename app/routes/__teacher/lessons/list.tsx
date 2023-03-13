@@ -1,7 +1,11 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
-import { IconCalendarPlus, IconCalendarTime } from "@tabler/icons-react";
+import {
+  IconCalendarPlus,
+  IconCalendarTime,
+  ChevronLeftIconSolid,
+  ChevronRightIconSolid,
+} from "~/utils/icons";
 import dayjs from "dayjs";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
@@ -153,7 +157,7 @@ export default function LessonsListView() {
                 className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
               >
                 <span className="sr-only">עבור לשבוע שעבר</span>
-                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                <ChevronRightIconSolid className="h-5 w-5" aria-hidden="true" />
               </button>
               <button
                 type="submit"
@@ -168,7 +172,7 @@ export default function LessonsListView() {
                 className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
               >
                 <span className="sr-only">עבור לשבוע הבא</span>
-                <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                <ChevronLeftIconSolid className="h-5 w-5" aria-hidden="true" />
               </button>
             </span>
           </div>
@@ -247,7 +251,7 @@ export default function LessonsListView() {
                     </div>
                   </div>
                   <div className="flex-shrink-0 ltr:ml-5 rtl:mr-5">
-                    <ChevronLeftIcon
+                    <ChevronLeftIconSolid
                       className="h-5 w-5 text-gray-400"
                       aria-hidden="true"
                     />
@@ -267,7 +271,7 @@ export default function LessonsListView() {
             className="relative -ml-px inline-flex flex-1 items-center justify-center rounded-r-md bg-white px-3 py-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
           >
             <span className="sr-only">עבור לשבוע שעבר</span>
-            <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+            <ChevronRightIconSolid className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
             type="submit"
@@ -282,7 +286,7 @@ export default function LessonsListView() {
             className="relative inline-flex flex-1 items-center justify-center rounded-l-md bg-white px-3 py-3 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
           >
             <span className="sr-only">עבור לשבוע הבא</span>
-            <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+            <ChevronLeftIconSolid className="h-5 w-5" aria-hidden="true" />
           </button>
         </span>
         <Link

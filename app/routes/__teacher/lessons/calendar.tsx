@@ -6,7 +6,7 @@ import {
   useLoaderData,
   useSubmit,
 } from "@remix-run/react";
-import { IconCalendarPlus } from "@tabler/icons-react";
+import { IconCalendarPlus } from "~/utils/icons";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { namedAction } from "remix-utils";

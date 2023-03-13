@@ -14,7 +14,7 @@ import { formatDuration } from "~/utils/format";
 import StudentAvatar from "./student-avatar";
 import { Student } from "~/types/student";
 import { Link } from "@remix-run/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIconSolid, ChevronRightIconSolid } from "~/utils/icons";
 
 interface EventsCalendarProps {
   lessons: Lesson[];
@@ -176,7 +176,7 @@ export default function EventsCalendar({
                 className="border-l pr-1 pl-2"
                 onClick={onPreviousWeek}
               >
-                <ChevronRightIcon className="h-6 w-auto" />
+                <ChevronRightIconSolid className="h-6 w-auto" />
               </button>
               {days.map((day, dayIndex) => (
                 <button
@@ -211,7 +211,7 @@ export default function EventsCalendar({
                 className="border-r pl-1 pr-2"
                 onClick={onNextWeek}
               >
-                <ChevronLeftIcon className="h-6 w-auto" />
+                <ChevronLeftIconSolid className="h-6 w-auto" />
               </button>
             </div>
 
@@ -222,7 +222,7 @@ export default function EventsCalendar({
                   className="bg-gray-100 pl-1 pr-1"
                   onClick={onPreviousWeek}
                 >
-                  <ChevronRightIcon className="h-6 w-auto" />
+                  <ChevronRightIconSolid className="h-6 w-auto" />
                 </button>
               </div>
               {days.map((day) => (
@@ -249,7 +249,7 @@ export default function EventsCalendar({
               ))}
               <div className="col-end-9 flex w-8 justify-start">
                 <button className="bg-gray-100 pr-1" onClick={onNextWeek}>
-                  <ChevronLeftIcon className="h-6 w-auto" />
+                  <ChevronLeftIconSolid className="h-6 w-auto" />
                 </button>
               </div>
             </div>

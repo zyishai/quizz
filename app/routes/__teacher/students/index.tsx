@@ -1,5 +1,3 @@
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -9,7 +7,7 @@ import { formatPhoneNumber } from "~/utils/phone-number";
 import { deleteExistingStudent, getStudents } from "~/handlers/students.server";
 import { isAppError } from "~/utils/app-error";
 import { ErrorType } from "~/types/errors";
-import { IconUserPlus } from "@tabler/icons-react";
+import { IconUserPlus, ChevronLeftIconOutline } from "~/utils/icons";
 import { formatGrade } from "~/utils/format";
 
 export const action = async ({ request }: ActionArgs) => {
@@ -93,7 +91,7 @@ export default function ListStudents() {
                         </p>
                       </div>
                     </span>
-                    <ChevronLeftIcon
+                    <ChevronLeftIconOutline
                       className="h-5 w-5 text-gray-400 group-hover:text-gray-500 ltr:ml-4 rtl:mr-4"
                       aria-hidden="true"
                     />

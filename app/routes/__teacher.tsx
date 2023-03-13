@@ -1,14 +1,4 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  CalendarDaysIcon,
-  CreditCardIcon,
-  FolderIcon,
-  HomeIcon,
-  ReceiptPercentIcon,
-  UserIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
 import { Fragment, useState } from "react";
 import { json, LoaderArgs } from "@remix-run/node";
 import { getUserId, logout, requireUserId } from "~/utils/session.server";
@@ -21,6 +11,17 @@ import { Outlet, useLoaderData } from "@remix-run/react";
 import BetaNoticeBanner from "~/components/beta-banner";
 import SideNav from "~/components/side-nav";
 import UpgradeToProCTA from "~/components/upgrade-to-pro-cta";
+import {
+  Bars3IconOutline,
+  CalendarDaysIconOutline,
+  CreditCardIconOutline,
+  FolderIconOutline,
+  HomeIconOutline,
+  ReceiptPercentIconOutline,
+  UserIconOutline,
+  UsersIconOutline,
+  XMarkIconOutline,
+} from "~/utils/icons";
 
 export const loader = async ({ request }: LoaderArgs) => {
   await requireUserId(request);
@@ -50,43 +51,43 @@ const navigation = [
   {
     label: "בית",
     href: "/",
-    icon: HomeIcon,
+    icon: HomeIconOutline,
     isPro: false,
   },
   {
     label: "תלמידים",
     href: "/students",
-    icon: UsersIcon,
+    icon: UsersIconOutline,
     isPro: false,
   },
   {
     label: "שיעורים",
     href: "/lessons",
-    icon: CalendarDaysIcon,
+    icon: CalendarDaysIconOutline,
     isPro: false,
   },
   {
     label: "תשלומים",
     href: "/payments",
-    icon: CreditCardIcon,
+    icon: CreditCardIconOutline,
     isPro: false,
   },
   {
     label: "חומרי לימוד",
     href: "/documents",
-    icon: FolderIcon,
+    icon: FolderIconOutline,
     isPro: true,
   },
   {
     label: "קבלות",
     href: "/receipts",
-    icon: ReceiptPercentIcon,
+    icon: ReceiptPercentIconOutline,
     isPro: true,
   },
   {
     label: "הפרופיל שלי",
     href: "/profile",
-    icon: UserIcon,
+    icon: UserIconOutline,
     isPro: false,
   },
 ];
@@ -149,7 +150,7 @@ export default function TeacherView() {
                         onClick={() => setSidebarOpen(false)}
                       >
                         <span className="sr-only">Close sidebar</span>
-                        <XMarkIcon
+                        <XMarkIconOutline
                           className="h-6 w-6 text-white"
                           aria-hidden="true"
                         />
@@ -209,7 +210,7 @@ export default function TeacherView() {
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
-              <Bars3Icon className="mt-1 h-6 w-6" aria-hidden="true" />
+              <Bars3IconOutline className="mt-1 h-6 w-6" aria-hidden="true" />
             </button>
             <h1 className="text-2xl font-medium text-gray-800">
               הפורטל

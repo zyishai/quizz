@@ -1,15 +1,14 @@
-import {
-  AtSymbolIcon,
-  ExclamationCircleIcon,
-  PhoneIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
 import { Form } from "@remix-run/react";
 import { useRef, useState } from "react";
 import { PaymentAccount } from "~/types/payment-account";
-import { Contact, ContactDraft, Grade, Student } from "~/types/student";
+import { Contact, ContactDraft, Grade } from "~/types/student";
 import { grades } from "~/utils/grades";
-import { hasStudentFetched } from "~/utils/misc";
+import {
+  AtSymbolIconOutline,
+  ExclamationCircleIconOutline,
+  PhoneIconOutline,
+  XMarkIconOutline,
+} from "~/utils/icons";
 
 interface StudentFormProps {
   id: string;
@@ -87,7 +86,7 @@ export default function StudentForm({
             id="fullname-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -125,7 +124,7 @@ export default function StudentForm({
             id="grade-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -300,7 +299,7 @@ export default function StudentForm({
             id="contacts-error"
             role="alert"
           >
-            <ExclamationCircleIcon
+            <ExclamationCircleIconOutline
               className="inline-block h-4 w-4 ltr:mr-1 rtl:ml-1"
               aria-hidden="true"
             />
@@ -328,7 +327,7 @@ function NewContactFieldset({
           onClick={() => onRemove(contact.id)}
           className="rounded-md bg-red-100 hover:bg-red-400 hover:text-white"
         >
-          <XMarkIcon className="h-5 w-5" />
+          <XMarkIconOutline className="h-5 w-5" />
         </button>
       </legend>
 
@@ -398,7 +397,10 @@ function NewContactFieldset({
         </div>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 flex items-center ltr:left-0 ltr:pl-3 rtl:right-0 rtl:pr-3">
-            <PhoneIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <PhoneIconOutline
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </div>
           <input
             type="tel"
@@ -427,7 +429,7 @@ function NewContactFieldset({
         </div>
         <div className="relative mt-1 rounded-md shadow-sm">
           <div className="pointer-events-none absolute inset-y-0 flex items-center ltr:left-0 ltr:pl-3 rtl:right-0 rtl:pr-3">
-            <AtSymbolIcon
+            <AtSymbolIconOutline
               className="h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -466,7 +468,7 @@ function ExistingContactFieldset({
           onClick={() => onRemove(contact.id)}
           className="rounded-md bg-red-100 hover:bg-red-400 hover:text-white"
         >
-          <XMarkIcon className="h-5 w-5" />
+          <XMarkIconOutline className="h-5 w-5" />
         </button>
       </legend>
 

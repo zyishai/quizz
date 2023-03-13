@@ -1,11 +1,14 @@
-import { MapPinIcon } from "@heroicons/react/24/outline";
 import { json, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { requireMobile } from "~/utils/mobile.server";
 import { getStudent } from "~/handlers/students.server";
 import StudentAvatar from "~/components/student-avatar";
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
-import { IconPencil, IconTrashX } from "@tabler/icons-react";
+import {
+  IconPencil,
+  IconTrashX,
+  MapPinIconOutline,
+  ArrowRightIconSolid,
+} from "~/utils/icons";
 import { formatGrade } from "~/utils/format";
 
 export const loader = async ({ request, params }: LoaderArgs) => {
@@ -29,7 +32,7 @@ export default function StudentDetails() {
             to="/students"
             className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
           >
-            <ArrowRightIcon className="h-5 w-auto" />
+            <ArrowRightIconSolid className="h-5 w-auto" />
           </Link>
           <span>פרטי תלמיד</span>
         </h1>
@@ -62,7 +65,7 @@ export default function StudentDetails() {
                       </p>
                     </Link>
                     <div className="mt-1 flex items-center space-x-1 rtl:space-x-reverse">
-                      <MapPinIcon
+                      <MapPinIconOutline
                         className="h-3.5 w-3.5 flex-shrink-0 text-gray-500"
                         aria-hidden="true"
                       />

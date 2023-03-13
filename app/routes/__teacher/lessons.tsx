@@ -1,4 +1,3 @@
-import { CalendarDaysIcon, ListBulletIcon } from "@heroicons/react/24/outline";
 import { ActionArgs, json } from "@remix-run/node";
 import { NavLink, Outlet, useLocation, useNavigate } from "@remix-run/react";
 import clsx from "clsx";
@@ -7,6 +6,7 @@ import {
   constructLookupAvailableTimesConstraint,
   findAvailableTimes,
 } from "~/handlers/lessons.server";
+import { CalendarDaysIconOutline, ListBulletIconOutline } from "~/utils/icons";
 
 export const action = async ({ request }: ActionArgs) => {
   return namedAction(request, {
@@ -29,8 +29,8 @@ export const action = async ({ request }: ActionArgs) => {
 };
 
 const tabs = [
-  { label: "לוח שנה", href: "calendar", icon: CalendarDaysIcon },
-  { label: "רשימת שיעורים", href: "list", icon: ListBulletIcon },
+  { label: "לוח שנה", href: "calendar", icon: CalendarDaysIconOutline },
+  { label: "רשימת שיעורים", href: "list", icon: ListBulletIconOutline },
 ];
 
 export default function LessonsLayoutPage() {

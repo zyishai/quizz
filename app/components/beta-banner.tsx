@@ -1,5 +1,5 @@
-import { XMarkIcon } from "@heroicons/react/24/solid";
 import { Link } from "@remix-run/react";
+import { XMarkIconSolid } from "~/utils/icons";
 
 export default function BetaNoticeBanner() {
   return (
@@ -28,7 +28,7 @@ export default function BetaNoticeBanner() {
           className="-m-3 p-3 focus-visible:outline-offset-[-4px]"
         >
           <span className="sr-only">Dismiss</span>
-          <XMarkIcon className="h-5 w-5 text-white" aria-hidden="true" />
+          <XMarkIconSolid className="h-5 w-5 text-white" aria-hidden="true" />
         </button>
       </div>
     </div>
