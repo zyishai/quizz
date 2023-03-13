@@ -17,7 +17,6 @@ FROM node:18.14.1-alpine3.17
 
 WORKDIR /usr/app
 
-USER node
 
 ENV NODE_ENV=production
 
@@ -32,6 +31,8 @@ COPY --from=base /usr/app/public ./public
 COPY --from=base /usr/app/build ./build
 COPY --from=base /usr/app/migrations ./migrations
 RUN chmod -R 777 /usr/app/migrations
+
+USER node
 
 CMD ["yarn", "start"]
 
