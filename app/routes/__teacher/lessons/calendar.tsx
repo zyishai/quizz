@@ -171,18 +171,6 @@ export default function LessonsCalendarView() {
           </span>
         </h1>
 
-        <Link
-          to="/lessons/new"
-          state={{ date: currentDate }}
-          className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ltr:mr-2 rtl:ml-2 sm:inline-flex"
-        >
-          <IconCalendarPlus
-            className="h-4 w-auto ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3"
-            aria-hidden="true"
-          />
-          יצירת שיעור חדש
-        </Link>
-
         <button
           form="currentWeek"
           type="submit"
@@ -190,6 +178,17 @@ export default function LessonsCalendarView() {
         >
           עבור להיום
         </button>
+        <Link
+          to="/lessons/new"
+          state={{ date: currentDate }}
+          className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ltr:ml-2 rtl:mr-2 sm:inline-flex"
+        >
+          <IconCalendarPlus
+            className="h-4 w-auto ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3"
+            aria-hidden="true"
+          />
+          יצירת שיעור חדש
+        </Link>
       </header>
 
       <EventsCalendar
