@@ -45,7 +45,6 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 
 export default function PaymentAccountInfoPage() {
   const { account } = useLoaderData<typeof loader>();
-  console.log(account);
   const studentsFetched = haveStudentsFetched(account);
 
   return (
@@ -145,6 +144,7 @@ export default function PaymentAccountInfoPage() {
         <h1 className="mb-3 text-xl font-semibold text-gray-800">
           חיובים וזיכויים
         </h1>
+
         {/* Transactions list (only on smallest breakpoint) */}
         <ul
           role="list"
@@ -152,7 +152,7 @@ export default function PaymentAccountInfoPage() {
         >
           {account.transactions.map((transaction, index) => (
             <li key={transaction.id}>
-              <Link to="#" className="flex py-4">
+              <Link to={`/lessons/${transaction.id}`} className="flex py-4">
                 <div className="inline-block">
                   {transaction.type === TransactionType.CREDIT ? (
                     <IconArrowBigUpFilled className="h-8 w-auto text-emerald-500" />
@@ -248,7 +248,7 @@ export default function PaymentAccountInfoPage() {
                             <span>
                               חיוב{" "}
                               <Link
-                                to="#"
+                                to={`/lessons/${transaction.id}`}
                                 className="text-xs text-blue-600 hover:text-blue-700"
                               >
                                 (מקור)
