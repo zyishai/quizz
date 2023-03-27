@@ -137,7 +137,7 @@ export default function StudentForm({
         <label className="block text-sm font-semibold text-gray-700">
           חשבון תשלום
         </label>
-        <p className="text-sm text-gray-500">
+        <p className="mt-1 text-xs leading-5 text-gray-400">
           חשבון תשלום זו הכרטיסיה הדיגיטלית של התלמיד. ניתן לשים מספר תלמידים
           באותו החשבון (לדוגמא: אחים) אבל לא ניתן לשים את אותו התלמיד במספר
           חשבונות.
@@ -151,7 +151,6 @@ export default function StudentForm({
                 name="paymentAccount"
                 type="radio"
                 value="new"
-                defaultChecked={!fields?.paymentAccountId}
                 className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-600"
                 onChange={() => setShowAccountSelector(false)}
               />
@@ -199,6 +198,24 @@ export default function StudentForm({
                 ))}
               </select>
             )}
+
+            <div className="flex items-center">
+              <input
+                id="noAccount"
+                name="paymentAccount"
+                type="radio"
+                value="absent"
+                defaultChecked={!fields?.paymentAccountId}
+                className="h-4 w-4 border-gray-300 text-amber-600 focus:ring-amber-600"
+                onChange={() => setShowAccountSelector(false)}
+              />
+              <label
+                htmlFor="noAccount"
+                className="block text-sm font-medium leading-6 text-gray-900 ltr:ml-3 rtl:mr-3"
+              >
+                אל תיצור חשבון
+              </label>
+            </div>
           </div>
         </fieldset>
       </div>

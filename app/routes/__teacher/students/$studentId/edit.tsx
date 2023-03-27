@@ -51,6 +51,7 @@ import { getPaymentAccountsList } from "~/handlers/payments.server";
 export const action = async ({ request, params }: ActionArgs) => {
   const { studentId } = params;
   const fields = await constructUpdateStudentDto(request, studentId);
+  console.log(fields);
 
   const fieldErrors = {
     fullName: undefined,

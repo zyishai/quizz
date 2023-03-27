@@ -1,9 +1,9 @@
 import { Result } from "surrealdb.js";
 import { Credit, PaymentMethod } from "~/types/payment";
-import { Contact, CreateContactDto, CreateStudentDto, Grade, Student, UpdateContactDto, UpdateStudentDto } from "~/types/student";
-import { truthy } from "~/utils/misc";
+import { Contact, CreateContactDto, CreateStudentDto, Grade, NewContact, Student, UpdateContactDto, UpdateStudentDto } from "~/types/student";
+import { assertString, truthy } from "~/utils/misc";
 import { getDatabaseInstance } from "./db.adapter";
-import { addStudentToPaymentAccount, createPaymentAccount, moveStudentToPaymentAccount } from "./payment.adapter";
+import { addStudentToPaymentAccount, createPaymentAccount, moveStudentToPaymentAccount, removeStudentFromPaymentAccount } from "./payment.adapter";
 
 // Module level types
 
@@ -124,11 +124,12 @@ export async function createStudent(dto: CreateStudentDto): Promise<Student | nu
 
   if (student.result.length > 0) {
     // Attach student and contacts to existing or new payment account
-    if (dto.paymentAccountId) {
+    if (dto.accountType === 'existing') {
+      assertString(dto.paymentAccountId);
       if (!await addStudentToPaymentAccount({ accountId: dto.paymentAccountId, studentId: student.result[0].id, contactIds: contacts })) {
         throw new Error(`Could not attach student to payment account: ${dto.paymentAccountId}`);
       }
-    } else {
+    } else if (dto.accountType === 'new') {
       if (!await createPaymentAccount({ teacherId: dto.teacherId, students: [student.result[0].id], contacts })) {
         throw new Error(`Could not create payment account for the student`);
       }
@@ -157,12 +158,29 @@ export async function updateStudent({ studentId, teacherId, accountType, payment
   } else {
     if (accountType === 'new') {
       // remove student from existing payment account and create new payment account
-      await moveStudentToPaymentAccount({ teacherId, studentId })
-    } else {
+      await removeStudentFromPaymentAccount({ studentId });
+      await createPaymentAccount({ teacherId, students: [studentId], contacts })
+    } else if (accountType === 'existing') {
       await moveStudentToPaymentAccount({ teacherId, studentId, accountId: paymentAccountId });
     }
 
     return mapToStudent(student);
+  }
+}
+
+type UpdateStudentInfoDto = {
+  studentId: string;
+  fullName?: string;
+  grade?: Grade;
+}
+export async function updateStudentInfo({ studentId, ...updates }: UpdateStudentInfoDto): Promise<Student | null> {
+  const db = await getDatabaseInstance();
+  const student = await db.change<Student, {}>(studentId, updates);
+
+  if (Array.isArray(student)) {
+    return null;
+  } else {
+    return student;
   }
 }
 
@@ -183,8 +201,8 @@ function getContactIds(contacts: CreateContactDto[], teacherId: string): Promise
   })).then(results => results.filter(truthy));
 }
 
-function shouldCreateNewContact(contact: CreateContactDto): boolean {
-  return contact.id.startsWith('temp:') || contact.type === 'new';
+function shouldCreateNewContact(contact: CreateContactDto): contact is NewContact {
+  return contact.type === 'new';
 }
 
 export async function fetchContactsByTeacherId(teacherId: string): Promise<Contact[]> {
@@ -242,6 +260,37 @@ export async function updateContactInfo({ contactId, ...updateData }: UpdateCont
   } else {
     return contact;
   }
+}
+
+type AddContactDto = {
+  studentId: string;
+  teacherId: string;
+  contact: CreateContactDto;
+}
+export async function addContactToStudent({ teacherId, studentId, contact }: AddContactDto): Promise<Student | null> {
+  const db = await getDatabaseInstance();
+
+  const [contactId] = await getContactIds([contact], teacherId);
+  if (!contactId) {
+    return null;
+  }
+  const [students] = await db.query<Result<Student[]>[]>('update $studentId set contacts += $contactId', { studentId, contactId });
+  if (students.error) {
+    throw students.error;
+  }
+
+  return students.result.length > 0 ? students.result[0] : null;
+}
+
+export async function dropContact(studentId: string, contactId: string): Promise<Student | null> {
+  const db = await getDatabaseInstance();
+
+  const [student] = await db.query<Result<Student[]>[]>('update $studentId set contacts -= $contactId', { studentId, contactId });
+  if (student.error) {
+    throw student.error;
+  }
+
+  return student.result[0];
 }
 
 export async function fetchCreditsByContactId(contactId: string): Promise<Credit[]> {

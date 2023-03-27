@@ -1,9 +1,10 @@
-import { createStudent, deleteStudent, fetchCreditsByContactId, fetchStudentsByContactId, fetchStudentsByTeacherId, findStudentById, updateStudent } from "~/adapters/student.adapter";
+import { removeStudentFromPaymentAccount } from "~/adapters/payment.adapter";
+import { addContactToStudent, createStudent, deleteStudent, dropContact, fetchCreditsByContactId, fetchStudentsByContactId, fetchStudentsByTeacherId, findStudentById, updateStudent, updateStudentInfo } from "~/adapters/student.adapter";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
-import { CreateContactDto, CreateStudentDto, Student, UpdateStudentDto } from "~/types/student";
+import { CreateContactDto, CreateStudentDto, Grade, Student, UpdateStudentDto } from "~/types/student";
 import { AppError } from "~/utils/app-error";
-import { assertContactDtoType, assertGrade, assertString } from "~/utils/misc";
+import { assertContactDtoType, assertGrade, assertPaymentAccountType, assertString } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server"
 
 export const getStudents = async (request: Request) => {
@@ -46,6 +47,8 @@ export const constructNewStudentDto: (request: Request) => Promise<CreateStudent
       assertString(fullName);
       const grade = Number(formData.get('grade'));
       assertGrade(grade);
+      const accountType = formData.get('paymentAccount')?.toString();
+      assertPaymentAccountType(accountType);
       const paymentAccountId = formData.get('paymentAccountId')?.toString();
       const contacts: CreateContactDto[] = [];
       let id = 0;
@@ -60,7 +63,8 @@ export const constructNewStudentDto: (request: Request) => Promise<CreateStudent
         fullName,
         grade,
         contacts,
-        paymentAccountId
+        paymentAccountId,
+        accountType
       }
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
@@ -119,6 +123,8 @@ export const constructUpdateStudentDto: (request: Request, studentId?: string) =
       assertString(fullName);
       const grade = Number(formData.get('grade'));
       assertGrade(grade);
+      const accountType = formData.get('paymentAccount')?.toString();
+      assertPaymentAccountType(accountType);
       const paymentAccountId = formData.get('paymentAccountId')?.toString();
       const contacts: CreateContactDto[] = [];
       let id = 0;
@@ -133,7 +139,7 @@ export const constructUpdateStudentDto: (request: Request, studentId?: string) =
         teacherId,
         fullName,
         grade,
-        accountType: !!paymentAccountId ? 'existing' : 'new',
+        accountType,
         paymentAccountId,
         contacts,
       }
@@ -149,11 +155,44 @@ export const updateStudentDetails = async (dto: UpdateStudentDto) => {
   return updateStudent(dto);
 }
 
+type UpdateStudentInfoProps = {
+  fullName?: string;
+  grade?: Grade;
+}
+export const updateStudentPersonalInfo = async (studentId: string, data: UpdateStudentInfoProps) => {
+  return updateStudentInfo({
+    studentId,
+    ...data
+  });
+}
+
 export const deleteExistingStudent = async (request: Request) => {
   const formData = await request.formData();
   const studentId = formData.get('studentId');
   assertString(studentId);
+
+  if (!await removeStudentFromPaymentAccount({ studentId })) {
+    return false;
+  }
+
   return deleteStudent(studentId);
+}
+
+type AddContactProps  = {
+  teacherId: string;
+  studentId: string;
+  contact: CreateContactDto;
+}
+export const addContact = async (props: AddContactProps) => {
+  return addContactToStudent(props);
+}
+
+type RemoveContactProps = {
+  studentId: string;
+  contactId: string;
+}
+export const removeContact = async ({ studentId, contactId }: RemoveContactProps) => {
+  return dropContact(studentId, contactId);
 }
 
 export const getCreditsForStudent = async (student: Student) => {

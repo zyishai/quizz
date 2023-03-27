@@ -61,15 +61,9 @@ const navigation = [
     isPro: false,
   },
   {
-    label: "שיעורים",
+    label: "מערכת שעות",
     href: "/lessons",
     icon: CalendarDaysIconOutline,
-    isPro: false,
-  },
-  {
-    label: "תשלומים",
-    href: "/payments",
-    icon: CreditCardIconOutline,
     isPro: false,
   },
   {
