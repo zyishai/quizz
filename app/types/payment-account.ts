@@ -24,18 +24,21 @@ export enum TransactionType {
   DEBIT = 'DEBIT'
 }
 
-export type Transaction = {
+export type CreditTransaction = {
   id: string;
   type: TransactionType.CREDIT;
   sum: number;
   method: PaymentMethod;
   paidAt: DateTimeString;
-} | {
+};
+export type DebitTransaction = {
   id: string;
   type: TransactionType.DEBIT;
   sum: number;
   date: DateTimeString;
 };
+
+export type Transaction = CreditTransaction | DebitTransaction;
 
 export type PaymentAccount = EntityBase & {
   balance: number;
@@ -44,4 +47,10 @@ export type PaymentAccount = EntityBase & {
   students: string[] | Student[];
   contacts: string[] | Contact[];
   teacher: string | Teacher;
+}
+
+export type CreatePaymentAccountDto = {
+  students: string[];
+  contacts: string[];
+  teacherId: string;
 }

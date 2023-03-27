@@ -1,14 +1,10 @@
 import { Result } from "surrealdb.js";
 import { PaymentMethod } from "~/types/payment";
-import { PaymentAccount, TransactionType } from "~/types/payment-account";
+import { CreatePaymentAccountDto, PaymentAccount, TransactionType } from "~/types/payment-account";
+import { Student } from "~/types/student";
 import { getDatabaseInstance } from "./db.adapter";
 import { findStudentById } from "./student.adapter";
 
-type CreatePaymentAccountDto = {
-  students: string[];
-  contacts: string[];
-  teacherId: string;
-}
 export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promise<PaymentAccount | null> {
   const { students, contacts, teacherId } = dto;
   const db = await getDatabaseInstance();
@@ -73,7 +69,11 @@ export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?:
 export async function fetchPaymentAccountByStudentId(studentId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
 
-  const [account] = await db.query<Result<PaymentAccount[]>[]>('select * from paymentAccount where students contains $studentId', { studentId });
+  let query = 'select * from paymentAccount where students contains $studentId';
+  if (props?.fetch) {
+    query += ` fetch ${props.fetch.join(', ')}`;
+  };
+  const [account] = await db.query<Result<PaymentAccount[]>[]>(query, { studentId });
   if (account.error) {
     throw account.error;
   }
@@ -106,17 +106,15 @@ export async function moveStudentToPaymentAccount({ teacherId, studentId, accoun
   const db = await getDatabaseInstance();
 
   const existingAccount = await fetchPaymentAccountByStudentId(studentId);
-  if (!existingAccount) {
-    return null;
-  }
-
-  const [updatedAccount] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set students -= $studentId', { accountId: existingAccount.id, studentId });
-  if (updatedAccount.error) {
-    throw updatedAccount.error;
-  }
-  if (updatedAccount.result[0].students.length === 0) {
-    if (!await deletePaymentAccountById(updatedAccount.result[0].id)) {
-      return null;
+  if (existingAccount) {
+    const [updatedAccount] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set students -= $studentId', { accountId: existingAccount.id, studentId });
+    if (updatedAccount.error) {
+      throw updatedAccount.error;
+    }
+    if (updatedAccount.result[0].students.length === 0) {
+      if (!await deletePaymentAccountById(updatedAccount.result[0].id)) {
+        return null;
+      }
     }
   }
 
@@ -134,6 +132,24 @@ export async function moveStudentToPaymentAccount({ teacherId, studentId, accoun
     const paymentAccount = await createPaymentAccount({ teacherId, students: [studentId], contacts: student.contacts as unknown as string[] })
     return paymentAccount;
   }
+}
+
+type RemoveStudentFromAccountProps = {
+  studentId: string;
+}
+export async function removeStudentFromPaymentAccount({ studentId }: RemoveStudentFromAccountProps): Promise<boolean> {
+  const account = await fetchPaymentAccountByStudentId(studentId);
+  if (!account) {
+    return true;
+  }
+
+  const db = await getDatabaseInstance();
+  const [result] = await db.query('update $accountId set students -= $studentId', { accountId: account.id, studentId });
+  if (result.error) {
+    throw result.error;
+  }
+
+  return true;
 }
 
 type MakePaymentDto = {
@@ -227,4 +243,15 @@ export async function deletePaymentAccountById(accountId: string): Promise<boole
   await db.delete(accountId);
 
   return true;
+}
+
+export async function findStudentsWithoutAccount(): Promise<Student[]> {
+  const db = await getDatabaseInstance();
+
+  const [students] = await db.query<Result<Student[]>[]>('select * from student where (select id from paymentAccount where students contains $parent.id) = []');
+  if (students.error) {
+    throw students.error;
+  }
+
+  return students.result;
 }

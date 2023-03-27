@@ -2,8 +2,9 @@ import { DateRange } from "~/types/datetime";
 import { Lesson } from "~/types/lesson";
 import { Event } from "~/types/event";
 import { Replace } from "~/types/misc";
-import { Contact, Grade, Student } from "~/types/student";
+import { Contact, CreateContactDto, Grade, Student } from "~/types/student";
 import { validator } from '~/utils/validator.server';
+import { CreditTransaction, DebitTransaction, PaymentAccount, Transaction, TransactionType } from "~/types/payment-account";
 
 export function truthy<T>(value: T | null | undefined): value is T {
   return !!value;
@@ -30,6 +31,36 @@ export function assertContactDtoType(value: unknown): asserts value is 'new'|'ex
 
   if (!['new', 'existing'].includes(value)) {
     throw new Error(`Expected 'new' or 'existing'. Got: ${value}.`);
+  }
+}
+export function assertCreateContactDtoType(value: unknown): asserts value is CreateContactDto {
+  if (!value || typeof value !== 'object') {
+    throw new Error(`${value} is not a CreateContactDto type`);
+  }
+
+  if (!('type' in value) || typeof value.type !== 'string') {
+    throw new Error(`${value} is not a CreateContactDto type`);
+  }
+
+  if (!['new', 'existing'].includes(value.type)) {
+    throw new Error(`${value} is not a CreateContactDto type`);
+  }
+
+  if (value.type === 'existing' && !('id' in value)) {
+    throw new Error(`${value} is not a CreateContactDto type`);
+  }
+
+  if (value.type === 'new' && !('fullName' in value)) {
+    throw new Error(`${value} is not a CreateContactDto type`);
+  }
+}
+export function assertPaymentAccountType(value: unknown): asserts value is 'new'|'existing'|'absent' {
+  if (typeof value !== 'string') {
+    throw new Error(`${value} is not a string. Expected 'new', 'existing' or 'absent'.`);
+  }
+
+  if (!['new', 'existing', 'absent'].includes(value)) {
+    throw new Error(`Expected 'new', 'existing' or 'absent'. Got: ${value}`);
   }
 }
 type ValidRangeOptions = {
@@ -67,6 +98,30 @@ export function hasContactFetched(value: Contact | string): value is Contact {
   }
 
   return true;
+}
+export function haveStudentsFetched(value: PaymentAccount): value is Replace<typeof value, 'students', Student[]> {
+  for (let student of value.students) {
+    if (typeof student === 'string') {
+      return false;
+    }
+  }
+
+  return true;
+}
+export function haveContactsFetched(value: PaymentAccount): value is Replace<typeof value, 'contacts', Contact[]> {
+  for (let contact of value.contacts) {
+    if (typeof contact === 'string') {
+      return false;
+    }
+  }
+
+  return true;
+}
+export function isCreditTransaction(value: Transaction): value is CreditTransaction {
+  return value.type === TransactionType.CREDIT;
+}
+export function isDebitTransaction(value: Transaction): value is DebitTransaction {
+  return value.type === TransactionType.DEBIT;
 }
 
 type ID = string & { __brand: 'id' };
