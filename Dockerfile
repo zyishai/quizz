@@ -29,8 +29,6 @@ RUN yarn cache clean
 
 COPY --from=base /usr/app/public ./public
 COPY --from=base /usr/app/build ./build
-COPY --from=base /usr/app/migrations ./migrations
-RUN chmod -R 777 /usr/app/migrations
 
 USER node
 
