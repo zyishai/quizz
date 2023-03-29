@@ -9,6 +9,7 @@ import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import EditTransactionModal from "~/components/edit-transaction-modal";
 import MakePaymentModal from "~/components/make-payment-modal";
 import StudentAvatar from "~/components/student-avatar";
+import TransactionInfoModal from "~/components/transaction-info-modal";
 import {
   addPaymentToAccount,
   deleteCreditPayment,
@@ -152,6 +153,8 @@ export default function PaymentAccountInfoPage() {
   const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
   const [editTransactionModalTransactionIndex, setShowEditTransactionModal] =
     useState<number | null>(null);
+  const [transactionInfoModalTransactionIndex, setShowTransactionInfoModal] =
+    useState<number | null>(null);
 
   return (
     <>
@@ -270,7 +273,18 @@ export default function PaymentAccountInfoPage() {
         >
           {account.transactions.map((transaction, index) => (
             <li key={transaction.id}>
-              <Link to={`/lessons/${transaction.id}`} className="flex py-4">
+              <Link
+                to={`/lessons/${transaction.id}`}
+                className="flex py-4"
+                onClick={(e) => {
+                  if (isCreditTransaction(transaction)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowTransactionInfoModal(index);
+                    return false;
+                  }
+                }}
+              >
                 <div className="inline-block">
                   {transaction.type === TransactionType.CREDIT ? (
                     <IconArrowBigUpFilled className="h-8 w-auto text-emerald-500" />
@@ -550,6 +564,16 @@ export default function PaymentAccountInfoPage() {
             ? (account.transactions[
                 editTransactionModalTransactionIndex
               ] as CreditTransaction)
+            : undefined
+        }
+      />
+      <TransactionInfoModal
+        open={transactionInfoModalTransactionIndex !== null}
+        onClose={() => setShowTransactionInfoModal(null)}
+        account={account}
+        transaction={
+          typeof transactionInfoModalTransactionIndex === "number"
+            ? account.transactions[transactionInfoModalTransactionIndex]
             : undefined
         }
       />
