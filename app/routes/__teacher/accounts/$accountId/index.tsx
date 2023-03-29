@@ -271,57 +271,63 @@ export default function PaymentAccountInfoPage() {
           role="list"
           className="flex-1 divide-y divide-gray-200 overflow-auto sm:hidden"
         >
-          {account.transactions.map((transaction, index) => (
-            <li key={transaction.id}>
-              <Link
-                to={`/lessons/${transaction.id}`}
-                className="flex py-4"
-                onClick={(e) => {
-                  if (isCreditTransaction(transaction)) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowTransactionInfoModal(index);
-                    return false;
-                  }
-                }}
-              >
-                <div className="inline-block">
-                  {transaction.type === TransactionType.CREDIT ? (
-                    <IconArrowBigUpFilled className="h-8 w-auto text-emerald-500" />
-                  ) : (
-                    <IconArrowBigDownFilled className="h-8 w-auto text-red-500" />
-                  )}
-                </div>
-                <div className="ltr:ml-3 rtl:mr-3">
-                  <p className="text-base font-semibold text-gray-900">
-                    {transaction.type === TransactionType.CREDIT
-                      ? "שולם: "
-                      : "חיוב: "}
-                    <span dir="ltr" className="tabular-nums">
-                      {transaction.sum}
-                    </span>{" "}
-                    <span>&#8362;</span>
+          {account.transactions
+            .sort((a, b) => {
+              const first: string = isCreditTransaction(a) ? a.paidAt : a.date;
+              const second: string = isCreditTransaction(b) ? b.paidAt : b.date;
+              return Date.parse(first) - Date.parse(second);
+            })
+            .map((transaction, index) => (
+              <li key={transaction.id}>
+                <Link
+                  to={`/lessons/${transaction.id}`}
+                  className="flex py-4"
+                  onClick={(e) => {
+                    if (isCreditTransaction(transaction)) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowTransactionInfoModal(index);
+                      return false;
+                    }
+                  }}
+                >
+                  <div className="inline-block">
+                    {transaction.type === TransactionType.CREDIT ? (
+                      <IconArrowBigUpFilled className="h-8 w-auto text-emerald-500" />
+                    ) : (
+                      <IconArrowBigDownFilled className="h-8 w-auto text-red-500" />
+                    )}
+                  </div>
+                  <div className="ltr:ml-3 rtl:mr-3">
+                    <p className="text-base font-semibold text-gray-900">
+                      {transaction.type === TransactionType.CREDIT
+                        ? "שולם: "
+                        : "חיוב: "}
+                      <span dir="ltr" className="tabular-nums">
+                        {transaction.sum}
+                      </span>{" "}
+                      <span>&#8362;</span>
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      יתרה:{" "}
+                      <span dir="ltr" className="tabular-nums">
+                        {account.transactions
+                          .slice(0, index + 1)
+                          .reduce((sum, tx) => sum + tx.sum, 0)}
+                      </span>{" "}
+                      <span>&#8362;</span>
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-500 ltr:ml-auto rtl:mr-auto">
+                    {isCreditTransaction(transaction)
+                      ? dayjs(transaction.paidAt).format("DD.MM.YYYY")
+                      : isDebitTransaction(transaction)
+                      ? dayjs(transaction.date).format("DD.MM.YYYY")
+                      : null}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    יתרה:{" "}
-                    <span dir="ltr" className="tabular-nums">
-                      {account.transactions
-                        .slice(0, index + 1)
-                        .reduce((sum, tx) => sum + tx.sum, 0)}
-                    </span>{" "}
-                    <span>&#8362;</span>
-                  </p>
-                </div>
-                <p className="text-sm text-gray-500 ltr:ml-auto rtl:mr-auto">
-                  {isCreditTransaction(transaction)
-                    ? dayjs(transaction.paidAt).format("DD.MM.YYYY")
-                    : isDebitTransaction(transaction)
-                    ? dayjs(transaction.date).format("DD.MM.YYYY")
-                    : null}
-                </p>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            ))}
         </ul>
 
         {/* Transactions table (small breakpoint and up) */}

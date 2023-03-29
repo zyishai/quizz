@@ -44,7 +44,18 @@ export default function TransactionInfoModal({
               <button
                 type="submit"
                 className="inline-flex w-full justify-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 shadow-sm hover:bg-amber-200 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
-                onClick={onClose}
+                onClick={(e) => {
+                  if (
+                    !confirm(
+                      `האם ברצונך למחוק תשלום ע״ס ${transaction?.sum} ש״ח?`
+                    )
+                  ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }
+                  onClose();
+                }}
               >
                 מחק תשלום
               </button>
