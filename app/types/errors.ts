@@ -19,5 +19,8 @@ export enum ErrorType {
   AccountNotFound = 'AccountNotFound',
   AccountNotCreated = 'AccountNotCreated',
   PaymentAccountNotFound = 'PaymentAccountNotFound',
+  PaymentFailed = 'PaymentFailed',
+  PaymentUpdateFailed = 'PaymentUpdateFailed',
+  PaymentDeleteFailed = 'PaymentDeleteFailed',
   Other = 'Other'
 }

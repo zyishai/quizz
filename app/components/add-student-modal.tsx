@@ -53,6 +53,7 @@ export default function AddStudentModal({
           onSubmit={onClose}
         >
           <input type="hidden" name="_action" value="createNewStudent" />
+
           <div className="flex space-x-2 border-b border-gray-200 pb-6 rtl:space-x-reverse">
             <div className="flex-1">
               <label

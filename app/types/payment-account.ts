@@ -29,6 +29,7 @@ export type CreditTransaction = {
   type: TransactionType.CREDIT;
   sum: number;
   method: PaymentMethod;
+  student: string;
   paidAt: DateTimeString;
 };
 export type DebitTransaction = {

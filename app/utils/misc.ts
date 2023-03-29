@@ -4,7 +4,8 @@ import { Event } from "~/types/event";
 import { Replace } from "~/types/misc";
 import { Contact, CreateContactDto, Grade, Student } from "~/types/student";
 import { validator } from '~/utils/validator.server';
-import { CreditTransaction, DebitTransaction, PaymentAccount, Transaction, TransactionType } from "~/types/payment-account";
+import { CreditTransaction, DebitTransaction, PaymentAccount, PaymentMethod, Transaction, TransactionType } from "~/types/payment-account";
+import { paymentMethods } from "./payment-methods";
 
 export function truthy<T>(value: T | null | undefined): value is T {
   return !!value;
@@ -22,6 +23,14 @@ export function assertNumber(value: unknown): asserts value is number {
 export function assertGrade(value: number): asserts value is Grade {
   if (isNaN(value) || !validator.isInt(value.toString(), { min: 1, max: 12, allow_leading_zeroes: false })) {
     throw new Error(`${value} is not a valid grade. Grade should be a number between 1 and 12.`);
+  }
+}
+export function assertPaymentMethod(value: unknown): asserts value is PaymentMethod {
+  if (typeof value !== 'string') {
+    throw new Error(`${value} is not a PaymentMethod string`);
+  }
+  if (!paymentMethods.some((method) => method.value === value)) {
+    throw new Error(`${value} is not PaymentMethod type`);
   }
 }
 export function assertContactDtoType(value: unknown): asserts value is 'new'|'existing' {

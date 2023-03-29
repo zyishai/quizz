@@ -7,7 +7,9 @@ export {
   IconCalendar, 
   IconArrowBigDownFilled, 
   IconArrowBigUpFilled,
-  IconFilePlus
+  IconFilePlus,
+  IconPlus,
+  IconCurrencyShekel
 } from '@tabler/icons-react';
 export { 
   MapPinIcon as MapPinIconOutline, 

@@ -157,7 +157,7 @@ type MakePaymentDto = {
   sum: number;
   paymentMethod?: PaymentMethod;
   studentId: string;
-  contactId: string;
+  contactId?: string;
 }
 export async function makePaymentToAccount(dto: MakePaymentDto): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
@@ -167,10 +167,9 @@ export async function makePaymentToAccount(dto: MakePaymentDto): Promise<Payment
     type: $creditType,
     sum: $sum,
     method: $paymentMethod,
-    student: $studentId;
-    contact: $contactId;
+    student: $studentId,
     paidAt: time::now()
-  }`, { creditType: TransactionType.CREDIT, sum: dto.sum, paymentMethod: dto.paymentMethod, studentId: dto.studentId, contactId: dto.contactId });
+  }`, { accountId: dto.accountId, creditType: TransactionType.CREDIT, sum: dto.sum, paymentMethod: dto.paymentMethod, studentId: dto.studentId });
   if (account.error) {
     throw account.error;
   }
@@ -213,7 +212,7 @@ export async function updatePaymentDetails(props: UpdatePaymentProps): Promise<P
   if (contactId) {
     payment.contact = contactId;
   }
-  const [updatedAccount] = await db.query<Result<PaymentAccount[]>[]>(`update $accountId set payments[where id = $paymentid] = $payment`, { accountId, paymentId, payment });
+  const [updatedAccount] = await db.query<Result<PaymentAccount[]>[]>(`update $accountId set payments[where id = $paymentId] = $payment`, { accountId, paymentId, payment });
   if (updatedAccount.error) {
     throw updatedAccount.error;
   }
