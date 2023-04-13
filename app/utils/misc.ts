@@ -133,6 +133,16 @@ export function isDebitTransaction(value: Transaction): value is DebitTransactio
   return value.type === TransactionType.DEBIT;
 }
 
+export const throttleEventBy = <T extends (...args: any[]) => any>(handler: T, timeInMilliseconds: number) => {
+  let lastRun = 0;
+  return (...args: Parameters<T>) => {
+    if (Date.now() - lastRun >= timeInMilliseconds) {
+      lastRun = Date.now();
+      return handler(...args);
+    }
+  }
+}
+
 type ID = string & { __brand: 'id' };
 export function isID(value: string): asserts value is ID {
   if (value.startsWith('temp')) {

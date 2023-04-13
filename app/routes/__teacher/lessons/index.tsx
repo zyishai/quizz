@@ -1,82 +1,76 @@
-import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
-import { safeRedirect } from "remix-utils";
+import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
+import { namedAction, safeRedirect } from "remix-utils";
+import { getTeacherByUserId } from "~/adapters/teacher.adapter";
+import {
+  modifyLessonDateAndTime,
+  modifyLessonLength,
+  updateLesson,
+} from "~/handlers/lessons.server";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
 import { getClientPreferences } from "~/utils/client-prefs.server";
+import { assertNumber, assertString } from "~/utils/misc";
+import { getUserId } from "~/utils/session.server";
 
 export const action = async ({ request }: ActionArgs) => {
-  throw new AppError({
-    errType: ErrorType.Other,
-    message: "Route /lessons not implemented",
-  });
-  // return namedAction(request, {
-  //   async prev() {
-  //     const userId = await getUserId(request);
-  //     if (userId) {
-  //       const teacher = await getTeacherByUserId(userId);
-  //       if (teacher) {
-  //         const range = offsetRangeBy(
-  //           await getRange(request),
-  //           -1,
-  //           OffsetUnit.WEEK
-  //         );
-  //         const events = await findLessonsInRange(teacher.id, range);
-  //         console.log(range, events);
-
-  //         return json({ events, range });
-  //       } else {
-  //         throw new AppError({ errType: ErrorType.TeacherNotFound });
-  //       }
-  //     } else {
-  //       throw new AppError({ errType: ErrorType.UserNotFound });
-  //     }
-  //   },
-  //   async next() {
-  //     const userId = await getUserId(request);
-  //     if (userId) {
-  //       const teacher = await getTeacherByUserId(userId);
-  //       if (teacher) {
-  //         const range = offsetRangeBy(
-  //           await getRange(request),
-  //           1,
-  //           OffsetUnit.WEEK
-  //         );
-  //         const events = await findLessonsInRange(teacher.id, range);
-
-  //         return json({ events, range });
-  //       } else {
-  //         throw new AppError({ errType: ErrorType.TeacherNotFound });
-  //       }
-  //     } else {
-  //       throw new AppError({ errType: ErrorType.UserNotFound });
-  //     }
-  //   },
-  //   async today() {
-  //     const userId = await getUserId(request);
-  //     if (userId) {
-  //       const teacher = await getTeacherByUserId(userId);
-  //       if (teacher) {
-  //         const range = {
-  //           start: dayjs().startOf("week").toISOString(),
-  //           end: dayjs().endOf("week").toISOString(),
-  //         };
-  //         const events = await findLessonsInRange(teacher.id, range);
-
-  //         return json({ events, range });
-  //       } else {
-  //         throw new AppError({ errType: ErrorType.TeacherNotFound });
-  //       }
-  //     } else {
-  //       throw new AppError({ errType: ErrorType.UserNotFound });
-  //     }
-  //   },
+  // throw new AppError({
+  //   errType: ErrorType.Other,
+  //   message: "Route /lessons not implemented",
   // });
+  return namedAction(request, {
+    async updateLessonDuration() {
+      const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const lessonId = formData.get("lessonId");
+          assertString(lessonId);
+          const duration = Number(formData.get("duration"));
+          assertNumber(duration);
+
+          return json({
+            event: await modifyLessonLength(teacher.id, lessonId, duration),
+          });
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
+    },
+    async updateLessonPlacement() {
+      const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const lessonId = formData.get("lessonId");
+          assertString(lessonId);
+          const dateAndTime = formData.get("dateAndTime");
+          assertString(dateAndTime);
+
+          return json({
+            event: await modifyLessonDateAndTime(
+              teacher.id,
+              lessonId,
+              dateAndTime
+            ),
+          });
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
+    },
+  });
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const clientPrefs = await getClientPreferences(request);
-  const lastLessonsView = clientPrefs.lastLessonsView || "calendar";
-  return redirect(safeRedirect(`/lessons/${lastLessonsView}`, "/"));
+  // const clientPrefs = await getClientPreferences(request);
+  // const lastLessonsView = clientPrefs.lastLessonsView || "calendar";
+  return redirect(safeRedirect(`/lessons/calendar`, "/"));
 };
 
 // export const loader = async ({ request }: LoaderArgs) => {

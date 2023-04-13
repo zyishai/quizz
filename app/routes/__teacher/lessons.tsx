@@ -39,12 +39,12 @@ export default function LessonsLayoutPage() {
 
   return (
     <main className="flex h-full w-full flex-col overflow-hidden">
-      <div className="mb-5">
+      {/* <div className="mb-5">
         <div className="sm:hidden">
           <label htmlFor="tabs" className="sr-only">
             בחר תצוגת שיעורים
           </label>
-          {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
+          // Use an "onChange" listener to redirect the user to the selected tab URL.
           <select
             id="tabs"
             name="tabs"
@@ -108,7 +108,7 @@ export default function LessonsLayoutPage() {
             </nav>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <Outlet />
     </main>

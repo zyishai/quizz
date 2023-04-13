@@ -23,7 +23,17 @@ export const formatDuration = (duration: number) => {
     case 120: {
       return 'שעתיים'
     }
+    case 135: {
+      return 'שעתיים ורבע'
+    }
+    case 150: {
+      return 'שעתיים וחצי'
+    }
     default: {
+      if (duration % 60 === 0) {
+        return `${duration / 60} שעות`
+      }
+
       return `${duration} דקות`
     }
   }
@@ -92,4 +102,11 @@ export const formatGrade = (grade: number) => {
       throw new AppError({ errType: ErrorType.InvalidGrade });
     }
   }
+}
+export const formatTime24FromMinutes = (minutesSinceMidnight: number) => {
+  return `${Math.floor(minutesSinceMidnight / 60)
+  .toString()
+  .padStart(2, "0")}:${(minutesSinceMidnight % 60)
+  .toString()
+  .padStart(2, "0")}`
 }

@@ -1,4 +1,4 @@
-import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
+import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import {
   IconCalendarPlus,
@@ -7,7 +7,7 @@ import {
   ChevronRightIconSolid,
 } from "~/utils/icons";
 import dayjs from "dayjs";
-import { namedAction } from "remix-utils";
+import { namedAction, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { findLessonsInRange } from "~/handlers/lessons.server";
 import { OffsetUnit } from "~/types/datetime";
@@ -85,30 +85,31 @@ export const action = async ({ request }: ActionArgs) => {
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const userId = await getUserId(request);
-  if (userId) {
-    const teacher = await getTeacherByUserId(userId);
-    if (teacher) {
-      const range = await getRange(request);
-      const events = await findLessonsInRange(teacher.id, range);
+  return redirect(safeRedirect("/lessons/calendar", "/"));
+  // const userId = await getUserId(request);
+  // if (userId) {
+  //   const teacher = await getTeacherByUserId(userId);
+  //   if (teacher) {
+  //     const range = await getRange(request);
+  //     const events = await findLessonsInRange(teacher.id, range);
 
-      return json(
-        {
-          events,
-          range,
-        },
-        {
-          headers: {
-            "Set-Cookie": await setLastLessonsView(request, "list"),
-          },
-        }
-      );
-    } else {
-      throw new AppError({ errType: ErrorType.TeacherNotFound });
-    }
-  } else {
-    throw new AppError({ errType: ErrorType.UserNotFound });
-  }
+  //     return json(
+  //       {
+  //         events,
+  //         range,
+  //       },
+  //       {
+  //         headers: {
+  //           "Set-Cookie": await setLastLessonsView(request, "list"),
+  //         },
+  //       }
+  //     );
+  //   } else {
+  //     throw new AppError({ errType: ErrorType.TeacherNotFound });
+  //   }
+  // } else {
+  //   throw new AppError({ errType: ErrorType.UserNotFound });
+  // }
 };
 
 export default function LessonsListView() {

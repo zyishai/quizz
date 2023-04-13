@@ -178,6 +178,42 @@ export const updateLesson = async (dto: Partial<UpdateLessonDto> & Partial<Updat
   return lesson;
 }
 
+export const modifyLessonLength = async (teacherId: string, lessonId: string, duration: number) => {
+  const lesson = await getLesson(teacherId, lessonId);
+  if (typeof lesson.event === 'string') {
+    throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+  }
+
+  const event = await updateEventDetails({
+    eventId: lesson.event.id,
+    duration
+  });
+
+  if (!event) {
+    throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+  }
+
+  return event;
+}
+
+export const modifyLessonDateAndTime = async (teacherId: string, lessonId: string, dateAndTime: string) => {
+  const lesson = await getLesson(teacherId, lessonId);
+  if (typeof lesson.event === 'string') {
+    throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+  }
+
+  const event = await updateEventDetails({
+    eventId: lesson.event.id,
+    dateAndTime
+  });
+
+  if (!event) {
+    throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+  }
+
+  return event;
+}
+
 export const deleteLesson = async (lessonId: string) => {
   return deleteLessonById(lessonId);
 }

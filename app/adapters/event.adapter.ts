@@ -55,13 +55,20 @@ export async function createEvent({ teacherId, ...dto }: CreateEventDto): Promis
 
 export async function updateEventDetails({ eventId, ...updateData }: UpdateEventDto): Promise<Event | null> {
   const db = await getDatabaseInstance();
-  const event = await db.change<Event, {}>(eventId, {
-    dateAndTime: updateData.dateAndTime,
-    duration: updateData.duration,
-    status: updateData.status,
-    cancelledAt: updateData.status === EventStatus.CANCELLED ? (new Date()).toISOString() : undefined,
-    cancellationReason: updateData.status === EventStatus.CANCELLED ? updateData.cancellationReason : undefined
-  });
+  let updateDto = {} as Record<string, string | number | undefined>;
+  if (updateData.dateAndTime) {
+    updateDto.dateAndTime = updateData.dateAndTime;
+  }
+  if (updateData.duration) {
+    updateDto.duration = updateData.duration;
+  }
+  if (updateData.status) {
+    updateDto.status = updateData.status;
+    updateDto.cancelledAt = updateData.status === EventStatus.CANCELLED ? (new Date()).toISOString() : undefined;
+    updateDto.cancellationReason = updateData.status === EventStatus.CANCELLED ? updateData.cancellationReason : undefined;
+  }
+
+  const event = await db.change<Event, {}>(eventId, updateDto);
   if (Array.isArray(event)) {
     return null;
   } else {
