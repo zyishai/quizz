@@ -27,7 +27,6 @@ import { formatDuration, formatTime24FromMinutes } from "~/utils/format";
 import clsx from "clsx";
 import AddLessonModal from "~/components/add-lesson-modal";
 import { getStudents } from "~/handlers/students.server";
-import DeleteOrUpdateLessonModal from "~/components/delete-or-update-lesson-modal";
 import { XMarkIconSolid } from "~/utils/icons";
 import isMobile from "ismobilejs";
 
@@ -155,9 +154,6 @@ export default function LessonsCalendarView() {
   >(null);
   const fetcher = useFetcher();
   const [showNewLessonModal, setShowNewLessonModal] = useState(false);
-  const [updateLessonModalLessonId, setUpdateLessonModalLessonId] = useState<
-    string | null
-  >(null);
 
   const events = useMemo(
     () => actionData?.events || loaderData.events,
@@ -413,21 +409,6 @@ export default function LessonsCalendarView() {
         onClose={() => setShowNewLessonModal(false)}
         students={loaderData.students}
       />
-
-      {typeof updateLessonModalLessonId === "string" &&
-        lessons.some((lesson) => lesson.id === updateLessonModalLessonId) && (
-          <DeleteOrUpdateLessonModal
-            action="/lessons?index"
-            open={true}
-            onClose={() => setUpdateLessonModalLessonId(null)}
-            lesson={
-              lessons.find(
-                (lesson) => lesson.id === updateLessonModalLessonId
-              ) as Lesson
-            }
-            students={loaderData.students}
-          />
-        )}
     </>
   );
 }
