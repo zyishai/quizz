@@ -171,9 +171,7 @@ export default function CalendarGrid({
               </span>
             </div>
           ))}
-          <div className="sticky right-0 top-0 bg-white">
-            {ref?.parentElement?.scrollLeft}
-          </div>
+          <div className="sticky right-0 top-0 bg-white"></div>
         </div>
 
         {/* Spacer (between the header and the rest of the grid) */}
