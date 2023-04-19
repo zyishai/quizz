@@ -11,7 +11,9 @@ export {
   IconPlus,
   IconCurrencyShekel,
   IconLineDotted,
-  IconChevronDown
+  IconChevronDown,
+  IconArrowsMove,
+  IconArrowsVertical
 } from '@tabler/icons-react';
 export { 
   MapPinIcon as MapPinIconOutline, 

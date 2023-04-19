@@ -99,7 +99,7 @@ export default function TeacherView() {
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
             as="div"
-            className="relative z-40 lg:hidden"
+            className="relative z-50 lg:hidden"
             onClose={setSidebarOpen}
           >
             {/* Dark Overlay */}

@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { convertTimeComponentsToMinutesOffset } from "~/utils/datetime";
 import clsx from "clsx";
 import { formatTime24FromMinutes } from "~/utils/format";
+import { IconArrowsVertical } from "~/utils/icons";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -69,14 +70,14 @@ export default function CalendarGrid({
   return (
     <div className="relative flex-1 overflow-auto">
       <div
-        className="grid flex-1 grid-cols-[1fr_,auto] grid-rows-[auto_,8px_,1fr]"
+        className="relative grid min-w-[200%] flex-1 grid-cols-[1fr_,auto] grid-rows-[auto_,8px_,1fr] sm:min-w-full"
         ref={setRef}
         dir="ltr"
       >
         {/* Drag item indicator */}
         <div
           className={clsx([
-            "absolute right-0 z-30 h-px bg-red-400",
+            "absolute z-[45] h-px bg-red-400",
             {
               hidden: !isDragging,
             },
@@ -86,6 +87,8 @@ export default function CalendarGrid({
               draggedItemPosition && ref
                 ? draggedItemPosition.top - ref.getBoundingClientRect().top
                 : 56,
+            right:
+              ref && ref.parentElement ? 0 - ref.parentElement.scrollLeft : 0,
             left:
               draggedItemPosition && ref
                 ? draggedItemPosition.left -
@@ -104,7 +107,7 @@ export default function CalendarGrid({
         {/* Resize item indicator */}
         <div
           className={clsx([
-            "absolute right-0 z-30 h-px bg-gray-400",
+            "absolute z-[45] h-px bg-gray-400",
             {
               hidden: !isResizing,
             },
@@ -116,6 +119,8 @@ export default function CalendarGrid({
                   ref.getBoundingClientRect().top +
                   resizedItemPosition.height
                 : 0,
+            right:
+              ref && ref.parentElement ? 0 - ref.parentElement.scrollLeft : 0,
             left:
               resizedItemPosition && ref
                 ? resizedItemPosition.left -
@@ -124,18 +129,21 @@ export default function CalendarGrid({
                 : 80,
           }}
         >
-          <span className="absolute top-0 right-0 -translate-y-1/2 rounded bg-black px-1 text-xs text-white">
+          <span
+            className="absolute top-0 right-0 -translate-y-1/2 rounded bg-black px-1 text-xs text-white"
+            dir="rtl"
+          >
             {resizedItemInfo
-              ? `סיום השיעור: ${formatTime24FromMinutes(
+              ? `${formatTime24FromMinutes(
                   8 * 60 + (resizedItemInfo.y + resizedItemInfo.h) * 15
-                )}`
+                )} (סיום השיעור)`
               : ""}
           </span>
         </div>
 
         {/* Header */}
         <div
-          className="sticky top-0 z-40 col-span-2 col-start-1 row-start-1 grid select-none divide-x divide-gray-100 border-b border-gray-200 bg-white"
+          className="sticky top-0 z-[45] col-span-2 col-start-1 row-start-1 grid select-none divide-x divide-gray-100 border-b border-gray-200 bg-white"
           style={{
             gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr)) 40px`,
           }}
@@ -163,7 +171,9 @@ export default function CalendarGrid({
               </span>
             </div>
           ))}
-          <div></div>
+          <div className="sticky right-0 top-0 bg-white">
+            {ref?.parentElement?.scrollLeft}
+          </div>
         </div>
 
         {/* Spacer (between the header and the rest of the grid) */}
@@ -181,7 +191,7 @@ export default function CalendarGrid({
 
         {/* Times */}
         <div
-          className="col-start-2 row-start-3 grid select-none border-l border-gray-100"
+          className="sticky right-0 z-40 col-start-2 row-start-3 grid select-none border-l border-gray-100 bg-white"
           style={{
             gridTemplateRows: `repeat(${times.length * 2}, ${rowHeight * 2}px)`, // prettier-ignore
           }}
@@ -249,6 +259,13 @@ export default function CalendarGrid({
           containerPadding={[0, 0]}
           compactType={null}
           preventCollision={true}
+          draggableCancel=".cancel-drag"
+          draggableHandle=".drag-handle"
+          resizeHandle={
+            <div className="react-resizable-handle absolute bottom-0 left-1/2 -translate-x-1/2">
+              <IconArrowsVertical className="h-3 w-auto cursor-row-resize text-white/80" />
+            </div>
+          }
           onDrag={throttleEventBy<ReactGridLayout.ItemCallback>(
             (layout, oldItem, newItem, placeholder, event, elem) => {
               if (!isDragging) {
@@ -286,7 +303,7 @@ export default function CalendarGrid({
           }}
         >
           {itemIds.map((id) => (
-            <div key={id} className="flex flex-col p-1">
+            <div key={id} className="relative flex flex-col p-1">
               {renderItem(id)}
             </div>
           ))}

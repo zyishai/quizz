@@ -1,11 +1,9 @@
 import { ActionArgs, json, LinksFunction, LoaderArgs } from "@remix-run/node";
 import {
   Form,
-  Link,
   useActionData,
   useFetcher,
   useLoaderData,
-  useSubmit,
 } from "@remix-run/react";
 import { IconCalendarPlus } from "~/utils/icons";
 import dayjs from "dayjs";
@@ -27,6 +25,11 @@ import stylesHref from "react-grid-layout/css/styles.css";
 import extraStylesHref from "node_modules/react-resizable/css/styles.css";
 import { formatDuration, formatTime24FromMinutes } from "~/utils/format";
 import clsx from "clsx";
+import AddLessonModal from "~/components/add-lesson-modal";
+import { getStudents } from "~/handlers/students.server";
+import DeleteOrUpdateLessonModal from "~/components/delete-or-update-lesson-modal";
+import { XMarkIconSolid } from "~/utils/icons";
+import isMobile from "ismobilejs";
 
 export const links: LinksFunction = () => {
   return [
@@ -112,11 +115,16 @@ export const loader = async ({ request }: LoaderArgs) => {
     if (teacher) {
       const range = await getRange(request);
       const events = await findLessonsInRange(teacher.id, range);
+      const students = await getStudents(request);
+      const userAgent = request.headers.get("user-agent");
+      const { any: isMobilePhone } = isMobile(userAgent || undefined);
 
       return json(
         {
           events,
           range,
+          students,
+          isMobilePhone,
         },
         {
           headers: {
@@ -133,7 +141,6 @@ export const loader = async ({ request }: LoaderArgs) => {
 };
 
 export default function LessonsCalendarView() {
-  // const [currentDate, setCurrentDate] = useState<string | Date | null>(null);
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [lessons, setLessons] = useState<
@@ -143,8 +150,14 @@ export default function LessonsCalendarView() {
       displayDuration: string;
     })[]
   >([]);
-  // const submit = useSubmit();
+  const [activeMovableLessonId, setActiveMovableLessonId] = useState<
+    string | null
+  >(null);
   const fetcher = useFetcher();
+  const [showNewLessonModal, setShowNewLessonModal] = useState(false);
+  const [updateLessonModalLessonId, setUpdateLessonModalLessonId] = useState<
+    string | null
+  >(null);
 
   const events = useMemo(
     () => actionData?.events || loaderData.events,
@@ -212,6 +225,14 @@ export default function LessonsCalendarView() {
         <input type="hidden" name="rangeEnd" value={range.end} />
         <input type="hidden" name="_action" value="next" />
       </Form>
+      <Form
+        id="deleteLesson"
+        method="post"
+        action="/lessons?index"
+        className="hidden"
+      >
+        <input type="hidden" name="_action" value="deleteScheduledLesson" />
+      </Form>
 
       {/* Month and year (& "go to today" button) */}
       <header className="mb-5 flex items-center ltr:pr-1 rtl:pl-1">
@@ -236,16 +257,17 @@ export default function LessonsCalendarView() {
         >
           עבור להיום
         </button>
-        <Link
-          to="/lessons/new"
+        <button
+          type="button"
           className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ltr:ml-2 rtl:mr-2 sm:inline-flex"
+          onClick={() => setShowNewLessonModal(true)}
         >
           <IconCalendarPlus
             className="h-4 w-auto ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3"
             aria-hidden="true"
           />
           צור שיעור חדש
-        </Link>
+        </button>
       </header>
 
       <CalendarGrid
@@ -270,7 +292,6 @@ export default function LessonsCalendarView() {
                 ? days.length - 1 - new Date(lesson.event.dateAndTime).getDay()
                 : days.length - 1,
               maxW: 1,
-              resizeHandles: ["s"],
               static: false,
             };
           }),
@@ -312,18 +333,38 @@ export default function LessonsCalendarView() {
           return lesson ? (
             <>
               <div
-                className="flex flex-1 select-none flex-col items-center overflow-hidden text-ellipsis rounded-md bg-sky-600 p-1 text-white sm:flex-row sm:items-start sm:p-2"
+                className={clsx([
+                  "relative flex flex-1 select-none flex-col items-center justify-center overflow-hidden text-ellipsis rounded-md bg-sky-600 p-1 text-white sm:p-2",
+                  {
+                    "drag-handle":
+                      activeMovableLessonId === id || loaderData.isMobilePhone,
+                  },
+                ])}
                 dir="rtl"
+                onMouseOver={() => setActiveMovableLessonId(id)}
+                onMouseUp={() => setActiveMovableLessonId(null)}
               >
-                <span className="break-keep text-xs leading-tight sm:text-sm">
-                  {lesson.topic ||
-                    (hasStudentFetched(lesson)
-                      ? lesson.student.fullName
-                      : "ללא נושא")}
-                </span>
-                <span className="mx-1 leading-tight">&middot;</span>
-                <span className="text-xs leading-tight text-sky-200 sm:text-sm">
-                  {lesson.displayDuration}
+                <button
+                  type="submit"
+                  form="deleteLesson"
+                  className="cancel-drag absolute top-1 right-1 z-20 rounded-full bg-white/70 p-0.5 text-blue-600"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    if (!confirm("האם ברצונך למחוק את השיעור?")) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }
+                  }}
+                  name="lessonId"
+                  value={lesson.id}
+                >
+                  <XMarkIconSolid className="h-3 w-3" />
+                </button>
+
+                <span className="text-sm">
+                  {hasStudentFetched(lesson) ? lesson.student.fullName : null}
                 </span>
               </div>
             </>
@@ -354,16 +395,39 @@ export default function LessonsCalendarView() {
         }}
       />
 
-      <Link
-        to="/lessons/new"
+      <button
+        type="button"
         className="m-1 mt-3 inline-flex items-center justify-center rounded-md border border-transparent bg-amber-500 px-4 py-3 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:hidden"
+        onClick={() => setShowNewLessonModal(true)}
       >
         <IconCalendarPlus
           className="h-6 w-auto ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3"
           aria-hidden="true"
         />
         צור שיעור חדש
-      </Link>
+      </button>
+
+      <AddLessonModal
+        action="/lessons?index"
+        open={showNewLessonModal}
+        onClose={() => setShowNewLessonModal(false)}
+        students={loaderData.students}
+      />
+
+      {typeof updateLessonModalLessonId === "string" &&
+        lessons.some((lesson) => lesson.id === updateLessonModalLessonId) && (
+          <DeleteOrUpdateLessonModal
+            action="/lessons?index"
+            open={true}
+            onClose={() => setUpdateLessonModalLessonId(null)}
+            lesson={
+              lessons.find(
+                (lesson) => lesson.id === updateLessonModalLessonId
+              ) as Lesson
+            }
+            students={loaderData.students}
+          />
+        )}
     </>
   );
 }

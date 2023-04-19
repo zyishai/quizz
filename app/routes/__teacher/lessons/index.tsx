@@ -1,6 +1,8 @@
 import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
 import { namedAction, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
+import { createNewEvent } from "~/handlers/events.server";
+import { createNewLesson, deleteLesson } from "~/handlers/lessons.server";
 import {
   modifyLessonDateAndTime,
   modifyLessonLength,
@@ -8,7 +10,6 @@ import {
 } from "~/handlers/lessons.server";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
-import { getClientPreferences } from "~/utils/client-prefs.server";
 import { assertNumber, assertString } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
@@ -18,6 +19,47 @@ export const action = async ({ request }: ActionArgs) => {
   //   message: "Route /lessons not implemented",
   // });
   return namedAction(request, {
+    async addLesson() {
+      const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const dateAndTime = formData.get("datetime");
+          assertString(dateAndTime);
+          const duration = Number(formData.get("duration"));
+          assertNumber(duration);
+
+          const event = await createNewEvent({
+            teacherId: teacher.id,
+            dateAndTime,
+            duration,
+          });
+          if (!event) {
+            throw new AppError({ errType: ErrorType.EventNotCreated });
+          }
+
+          const price = Number(formData.get("price"));
+          assertNumber(price);
+          const topic = formData.get("topic")?.toString();
+          const studentId = formData.get("studentId");
+          assertString(studentId);
+
+          const lesson = await createNewLesson({
+            eventId: event.id,
+            price,
+            studentId,
+            topic,
+          });
+
+          return json({ lesson });
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
+    },
     async updateLessonDuration() {
       const userId = await getUserId(request);
       if (userId) {
@@ -57,6 +99,24 @@ export const action = async ({ request }: ActionArgs) => {
               dateAndTime
             ),
           });
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
+    },
+    async deleteScheduledLesson() {
+      const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const lessonId = formData.get("lessonId");
+          assertString(lessonId);
+
+          const isOk = await deleteLesson(lessonId);
+          return json({ isOk });
         } else {
           throw new AppError({ errType: ErrorType.TeacherNotFound });
         }

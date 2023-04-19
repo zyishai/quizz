@@ -13,3 +13,11 @@ body {
 .react-grid-placeholder {
   background-color: #fab57f !important;
 }
+
+.react-grid-item > .react-resizable-handle:after {
+  display: none !important;
+}
+
+.react-resizable-handle {
+  background-image: none !important;
+}

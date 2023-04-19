@@ -95,7 +95,12 @@ export async function updateLessonDetails({ lessonId, ...updateData }: UpdateLes
 
 export async function deleteLessonById(lessonId: string): Promise<boolean> {
   const db = await getDatabaseInstance();
-  await db.delete(lessonId);
+  const [res] = await db.query<Result<any[]>[]>('select event as eventId from $lessonId', { lessonId });
+  if (res.error || res.result.length < 1) {
+    return false;
+  }
+  await db.delete(res.result[0].eventId); // delete associated event;
+  await db.delete(lessonId); // delete the lesson;
   return true;
 }
 
