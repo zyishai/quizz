@@ -69,10 +69,8 @@ pipeline {
   }
   post {
     failure {
-      steps {
-        // [TODO] send email or something...
-        echo 'Failed!'
-      }
+      // [TODO] send email or something...
+      echo 'Failed!'
     }
   }
 }
