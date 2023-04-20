@@ -247,12 +247,47 @@ export default function LessonsCalendarView() {
         </h1>
 
         <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-md border border-transparent bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:hidden"
+          onClick={() => setShowNewLessonModal(true)}
+        >
+          <IconCalendarPlus
+            className="h-5 w-auto ltr:-ml-1 ltr:mr-2 rtl:-mr-1 rtl:ml-2"
+            aria-hidden="true"
+          />
+          שיעור חדש
+        </button>
+
+        <span className="isolate hidden rounded-md shadow-sm sm:inline-flex">
+          <button
+            type="submit"
+            form="prevWeek"
+            className="relative inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-medium text-orange-600 ring-1 ring-inset ring-orange-300 hover:bg-orange-50 focus:z-10"
+          >
+            שבוע שעבר
+          </button>
+          <button
+            type="submit"
+            form="currentWeek"
+            className="relative -mr-px inline-flex items-center bg-white px-3 py-2 text-sm font-medium text-orange-600 ring-1 ring-inset ring-orange-300 hover:bg-orange-50 focus:z-10"
+          >
+            שבוע נוכחי
+          </button>
+          <button
+            type="submit"
+            form="nextWeek"
+            className="relative -mr-px inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-medium text-orange-600 ring-1 ring-inset ring-orange-300 hover:bg-orange-50 focus:z-10"
+          >
+            שבוע הבא
+          </button>
+        </span>
+        {/* <button
           form="currentWeek"
           type="submit"
           className="inline-flex items-center rounded-md border border-orange-400 px-3 py-2 text-sm font-medium leading-4 text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
         >
           עבור להיום
-        </button>
+        </button> */}
         <button
           type="button"
           className="hidden items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ltr:ml-2 rtl:mr-2 sm:inline-flex"
@@ -391,17 +426,31 @@ export default function LessonsCalendarView() {
         }}
       />
 
-      <button
-        type="button"
-        className="m-1 mt-3 inline-flex items-center justify-center rounded-md border border-transparent bg-amber-500 px-4 py-3 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:hidden"
-        onClick={() => setShowNewLessonModal(true)}
-      >
-        <IconCalendarPlus
-          className="h-6 w-auto ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3"
-          aria-hidden="true"
-        />
-        צור שיעור חדש
-      </button>
+      <div className="m-1 mt-3 flex sm:hidden">
+        <button
+          type="submit"
+          className="rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-600 shadow-sm"
+          form="prevWeek"
+        >
+          שבוע שעבר
+        </button>
+
+        <button
+          type="submit"
+          className="mx-2 flex-1 rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-600 shadow-sm"
+          form="currentWeek"
+        >
+          שבוע נוכחי
+        </button>
+
+        <button
+          type="submit"
+          className="rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-600 shadow-sm"
+          form="nextWeek"
+        >
+          שבוע הבא
+        </button>
+      </div>
 
       <AddLessonModal
         action="/lessons?index"
