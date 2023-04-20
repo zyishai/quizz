@@ -24,11 +24,11 @@ export default function AddLessonModal({
   const durationInputRef = useRef<number | null>(null);
   const timeSlotsRef = useRef<DateTimeString[] | Date[] | null>(null);
   const fetcher = useFetcher<Date[]>();
-  const fetchAvailableSlots = () =>
+  const fetchAvailableSlots = (defaultDate?: string) =>
     fetcher.submit(
       {
         _action: "lookupAvailableTime",
-        date: dateInputRef.current?.value || "",
+        date: dateInputRef.current?.value || defaultDate || "",
         duration: (durationInputRef.current || 60).toString(),
       },
       { method: "post", action: "/lessons" }
@@ -40,8 +40,8 @@ export default function AddLessonModal({
     }
   }, [fetcher.data]);
 
-  useLayoutEffect(() => {
-    setTimeout(fetchAvailableSlots, 800);
+  useEffect(() => {
+    fetchAvailableSlots(dayjs().format("YYYY-MM-DD"));
   }, []);
 
   return (
