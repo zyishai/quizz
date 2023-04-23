@@ -13,7 +13,7 @@ export default function SelectAccountModal({
   onClose,
   accounts,
 }: SelectAccountProps) {
-  const [accountId, setAccountId] = useState<string>(accounts[0].id);
+  const [accountId, setAccountId] = useState<string>(accounts?.[0]?.id);
 
   return (
     <Dialog open={open} onClose={() => onClose()} title="בחר חשבון תשלום">
@@ -27,7 +27,7 @@ export default function SelectAccountModal({
           className="block w-full rounded-md border border-gray-300 bg-white py-1 px-3 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:py-2 sm:text-sm"
           onChange={(e) => setAccountId(e.target.value)}
         >
-          {accounts.filter(haveStudentsFetched).map((account, index) => (
+          {accounts?.filter(haveStudentsFetched)?.map((account, index) => (
             <option value={account.id} key={account.id}>
               {index + 1}.{" "}
               {account.students.length > 0

@@ -302,7 +302,11 @@ export default function AddStudentModal({
             open={showContactModal}
             onClose={(dto) => {
               setShowContactModal(false);
-              if (dto) {
+              if (
+                dto &&
+                ((dto.type === "new" && !!dto.fullName) ||
+                  (dto.type === "existing" && !!dto.id))
+              ) {
                 setContactDtos([...contactDtos, dto]);
               }
             }}
