@@ -117,7 +117,7 @@ export default function AddStudentModal({
                   {contactDtos.map((dto, index) => {
                     const contact =
                       dto.type === "existing"
-                        ? contacts.find((c) => c.id === dto.id)
+                        ? contacts?.find((c) => c.id === dto.id)
                         : dto;
                     const key =
                       dto.type === "existing" ? dto.id : dto.fullName + index;
@@ -213,7 +213,7 @@ export default function AddStudentModal({
                   <p>
                     חשבון נבחר בהצלחה, תלמידים הרשומים לחשבון זה:{" "}
                     {(
-                      accounts.find((acc) => acc.id === accountId)
+                      accounts?.find((acc) => acc.id === accountId)
                         ?.students as Student[]
                     )
                       .map((s) => s.fullName)
@@ -306,7 +306,7 @@ export default function AddStudentModal({
                 setContactDtos([...contactDtos, dto]);
               }
             }}
-            contacts={contacts.filter(
+            contacts={contacts?.filter(
               (contact) =>
                 !contactDtos.some(
                   (dto) => dto.type === "existing" && dto.id === contact.id

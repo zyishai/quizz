@@ -88,14 +88,14 @@ export function assertValidRange(value: DateRange, options?: ValidRangeOptions):
   }
 }
 export function hasEventFetched(value: Lesson): value is Replace<typeof value, 'event', Event> {
-  if (typeof value.event === 'string') {
+  if (!value.event || typeof value.event === 'string') {
     return false;
   }
   
   return true;
 }
 export function hasStudentFetched(value: Lesson): value is Replace<typeof value, 'student', Student> {
-  if (typeof value.student === 'string') {
+  if (!value.student || typeof value.student === 'string') {
     return false;
   }
 

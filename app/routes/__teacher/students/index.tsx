@@ -681,9 +681,13 @@ export default function ListStudents() {
               אופס.. אין תלמידים.
             </h2>
             <span className="text-gray-500">
-              <Link to="new" className="text-amber-500">
+              <button
+                type="button"
+                className="text-amber-500"
+                onClick={() => setShowStudentModal(true)}
+              >
                 הוסף תלמיד
-              </Link>{" "}
+              </button>{" "}
               כדי להציג אותו כאן
             </span>
           </div>

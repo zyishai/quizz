@@ -156,7 +156,10 @@ export default function LessonsCalendarView() {
   const [showNewLessonModal, setShowNewLessonModal] = useState(false);
 
   const events = useMemo(
-    () => actionData?.events || loaderData.events,
+    () =>
+      (actionData?.events || loaderData.events || [])
+        .filter(hasStudentFetched)
+        .filter(hasEventFetched),
     [loaderData, actionData]
   );
   const range = useMemo(
