@@ -102,7 +102,7 @@ export default function AddLessonModal({
                       key={dayjs(slot).tz("utc").format("HH:mm")}
                       value={dayjs(slot).tz("utc").toISOString()}
                     >
-                      {dayjs(slot).format("HH:mm")}
+                      {dayjs(slot).tz("utc").format("HH:mm")}
                     </option>
                   ))}
               </select>
