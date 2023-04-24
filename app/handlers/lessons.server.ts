@@ -37,7 +37,7 @@ export const constructLookupAvailableTimesConstraint: (request: Request) => Prom
     duration,
     fromTimeInMinutes: 8 * 60,
     untilTimeInMinutes: 19 * 60,
-    ignoreIds: lessonId ? [lessonId] : undefined
+    ignoreIds: lessonId ? [lessonId] : []
   };
 }
 type AvailableTimesConstraint = {
