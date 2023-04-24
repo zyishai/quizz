@@ -1,5 +1,11 @@
 import { createRequestHandler } from "@remix-run/netlify";
 import * as build from "@remix-run/dev/server-build";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /*
  * Returns a context object with at most 3 keys:
