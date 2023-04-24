@@ -80,7 +80,7 @@ export const findAvailableTimes = async (request: Request, constraint: Available
           continue
         }
 
-        availableTimes.push(targetDateTime.toDate());
+        availableTimes.push(targetDateTime.tz('utc', true).toDate());
       }
 
       return availableTimes;
