@@ -405,20 +405,14 @@ export default function LessonsCalendarView() {
           ) : null;
         }}
         onDragStop={(layout, oldItem, newItem, placeholder, event, elem) => {
-          const rangeStart = new Date(range.start);
-          let dateAndTime = new Date(range.start);
-          dateAndTime = new Date(
-            dateAndTime.setDate(
-              rangeStart.getDate() + days.length - newItem.x - 1
-            )
-          );
-          dateAndTime = new Date(
-            dateAndTime.setMinutes(8 * 60 + newItem.y * 15)
-          );
           fetcher.submit(
             {
               lessonId: newItem.i,
-              dateAndTime: dateAndTime.toISOString(),
+              dateAndTime: dayjs(range.start)
+                .startOf("week")
+                .day(days.length - newItem.x - 1)
+                .minute(8 * 60 + newItem.y * 15)
+                .toISOString(),
               _action: "updateLessonPlacement",
             },
             { method: "post", action: "/lessons?index" }
