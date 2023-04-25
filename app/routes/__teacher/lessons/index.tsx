@@ -1,4 +1,5 @@
 import { ActionArgs, LoaderArgs, json, redirect } from "@remix-run/node";
+import dayjs from "dayjs";
 import { namedAction, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { createNewEvent } from "~/handlers/events.server";
@@ -52,7 +53,16 @@ export const action = async ({ request }: ActionArgs) => {
             topic,
           });
 
-          return json({ lesson });
+          return redirect(
+            safeRedirect(
+              `/lessons/calendar?rangeStart=${dayjs(dateAndTime)
+                .startOf("week")
+                .toISOString()}&rangeEnd=${dayjs(dateAndTime)
+                .endOf("week")
+                .toISOString()}`,
+              "/lessons/calendar"
+            )
+          );
         } else {
           throw new AppError({ errType: ErrorType.TeacherNotFound });
         }

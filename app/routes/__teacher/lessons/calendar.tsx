@@ -457,10 +457,7 @@ export default function LessonsCalendarView() {
       <AddLessonModal
         action="/lessons?index"
         open={showNewLessonModal}
-        onClose={(date?: string) => {
-          // [TODO] Move to selected date
-          setShowNewLessonModal(false);
-        }}
+        onClose={() => setShowNewLessonModal(false)}
         students={loaderData.students}
       />
     </>
