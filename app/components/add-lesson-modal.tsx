@@ -10,7 +10,7 @@ import { durations } from "~/utils/durations";
 
 type AddLessonProps = {
   open: boolean;
-  onClose: () => void;
+  onClose: (date?: string) => void;
   action?: string;
   students: Student[];
 };
@@ -42,7 +42,12 @@ export default function AddLessonModal({
 
   useEffect(() => {
     if (open) {
-      fetchAvailableSlots(dayjs().format("YYYY-MM-DD"));
+      fetchAvailableSlots(
+        typeof document !== "undefined"
+          ? localStorage.getItem("lastSelectedDate") ||
+              dayjs().format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD")
+      );
     }
   }, [open]);
 
@@ -56,7 +61,7 @@ export default function AddLessonModal({
           action={action}
           className="mt-5"
           id="add-lesson-form"
-          onSubmit={onClose}
+          onSubmit={() => onClose(dateInputRef.current?.value)}
         >
           <input type="hidden" name="_action" value="addLesson" />
 
@@ -76,8 +81,18 @@ export default function AddLessonModal({
                 className="mt-1 block w-full rounded-md border-gray-300 py-1 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:py-2 sm:text-sm"
                 ref={dateInputRef}
                 onClick={() => dateInputRef.current?.showPicker?.()}
-                onChange={(e) => !!e.target.value && fetchAvailableSlots()}
-                defaultValue={dayjs().format("YYYY-MM-DD")}
+                onChange={(e) => {
+                  if (!!e.target.value) {
+                    localStorage.setItem("lastSelectedDate", e.target.value);
+                    fetchAvailableSlots();
+                  }
+                }}
+                value={
+                  typeof document !== "undefined"
+                    ? localStorage.getItem("lastSelectedDate") ||
+                      dayjs().format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD")
+                }
                 required
                 aria-required="true"
               />
@@ -213,7 +228,7 @@ export default function AddLessonModal({
           <button
             type="button"
             className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-            onClick={onClose}
+            onClick={() => onClose()}
           >
             ביטול
           </button>
