@@ -322,9 +322,7 @@ export default function LessonsCalendarView() {
               y: date
                 ? (date.hour() - 8) * 4 + Math.floor(date.minute() / 15)
                 : 0,
-              x: hasEventFetched(lesson)
-                ? days.length - 1 - new Date(lesson.event.dateAndTime).getDay()
-                : days.length - 1,
+              x: date ? days.length - 1 - date.get("day") : days.length - 1,
               maxW: 1,
               static: false,
             };

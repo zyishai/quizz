@@ -41,8 +41,10 @@ export default function AddLessonModal({
   }, [fetcher.data]);
 
   useEffect(() => {
-    fetchAvailableSlots(dayjs().format("YYYY-MM-DD"));
-  }, []);
+    if (open) {
+      fetchAvailableSlots(dayjs().format("YYYY-MM-DD"));
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onClose={onClose} title="יצירת שיעור">
@@ -100,7 +102,7 @@ export default function AddLessonModal({
                   ?.map((slot) => (
                     <option
                       key={dayjs(slot).tz("utc").format("HH:mm")}
-                      value={dayjs(slot).tz("utc").toISOString()}
+                      value={dayjs.tz(slot, "Israel").toISOString()}
                     >
                       {dayjs(slot).tz("utc").format("HH:mm")}
                     </option>
