@@ -44,7 +44,7 @@ function Document({
   title?: string;
 }) {
   return (
-    <html lang="en" dir="rtl">
+    <html lang="he" dir="rtl">
       <head>
         <Meta />
         <title>{title}</title>
