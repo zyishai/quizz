@@ -261,7 +261,9 @@ export default function StudentDetails() {
             {account ? (
               <div className="flex items-center rounded-md border border-gray-300 bg-white shadow-sm">
                 <Link
-                  to={`/accounts/${account.id}`}
+                  to={`/accounts/${
+                    account.id
+                  }?returnTo=${`/students/${student.id}`}`}
                   className="flex flex-1 items-center justify-between p-3"
                 >
                   <div>
@@ -304,7 +306,9 @@ export default function StudentDetails() {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to={`/accounts/${account.id}`}
+                              to={`/accounts/${
+                                account.id
+                              }?returnTo=${`/students/${student.id}`}`}
                               className={clsx([
                                 { "bg-gray-100 text-gray-900": active },
                                 { "text-gray-700": !active },
@@ -349,6 +353,15 @@ export default function StudentDetails() {
                                   { "text-red-600": !active },
                                   "block w-full px-4 py-2 text-sm rtl:text-right",
                                 ])}
+                                onClick={(e) => {
+                                  if (!confirm("האם ברצונך למחוק חשבון זה?")) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return false;
+                                  }
+
+                                  return true;
+                                }}
                               >
                                 הסר חשבון
                               </button>
@@ -409,13 +422,13 @@ export default function StudentDetails() {
                     </p>
 
                     <div className="divide-x divide-gray-200 rtl:divide-x-reverse">
-                      <Link
+                      {/* <Link
                         to={`/contacts/${contact.id}`}
                         className="px-2 text-sm text-gray-500"
                       >
                         הצג
-                      </Link>
-                      <Form method="post" className="inline-block px-2">
+                      </Link> */}
+                      <Form method="post" className="inline-block">
                         <input
                           type="hidden"
                           name="_action"
@@ -428,7 +441,7 @@ export default function StudentDetails() {
                         />
                         <button
                           type="submit"
-                          className="text-sm text-red-600"
+                          className="rounded-md border-0 border-red-400 bg-red-100 px-2 py-px text-xs text-red-500"
                           onClick={(e) => {
                             if (
                               !confirm(`להסיר את איש הקשר ${contact.fullName}?`)
