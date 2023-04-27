@@ -376,6 +376,14 @@ export default function LessonsCalendarView() {
                 onMouseOver={() => setActiveMovableLessonId(id)}
                 onMouseUp={() => setActiveMovableLessonId(null)}
               >
+                <input
+                  type="hidden"
+                  form="deleteLesson"
+                  name="returnToDate"
+                  value={
+                    hasEventFetched(lesson) ? lesson.event.dateAndTime : "."
+                  }
+                />
                 <button
                   type="submit"
                   form="deleteLesson"

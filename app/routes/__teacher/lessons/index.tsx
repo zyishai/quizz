@@ -7,7 +7,6 @@ import { createNewLesson, deleteLesson } from "~/handlers/lessons.server";
 import {
   modifyLessonDateAndTime,
   modifyLessonLength,
-  updateLesson,
 } from "~/handlers/lessons.server";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
@@ -126,7 +125,17 @@ export const action = async ({ request }: ActionArgs) => {
           assertString(lessonId);
 
           const isOk = await deleteLesson(lessonId);
-          return json({ isOk });
+          if (!isOk) {
+            throw new AppError({ errType: ErrorType.LessonDeleteFailed });
+          }
+
+          const returnToDate = formData.get("returnToDate")?.toString();
+          const rangeStart = dayjs(returnToDate).startOf("week").toISOString();
+          const rangeEnd = dayjs(returnToDate).endOf("week").toISOString();
+
+          return redirect(
+            `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+          );
         } else {
           throw new AppError({ errType: ErrorType.TeacherNotFound });
         }
