@@ -1,5 +1,6 @@
 pipeline {
-  agent any
+  // agent any
+  agent { label 'portal' }
   // agent { <-- this allows us to run the pipeline inside a Docker container
   //   docker {
   //     image 'node:16.13.1-alpine'
