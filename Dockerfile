@@ -13,19 +13,16 @@ RUN yarn build
 
 # Runtime Image
 
-FROM node:18.14.1-alpine3.17
+FROM node:20.0.0-alpine3.17
 
 WORKDIR /usr/app
-
 
 ENV NODE_ENV=production
 
 COPY --from=base /usr/app/package.json /usr/app/yarn.lock ./
 
-RUN yarn --prod
-
 # Should help reduce the size of /usr/local/share/.cache (hopefully..)
-RUN yarn cache clean
+RUN NODE_ENV=production yarn --frozen-lockfile --production && yarn cache clean
 
 COPY --from=base /usr/app/public ./public
 COPY --from=base /usr/app/build ./build
