@@ -24,7 +24,7 @@ history.txt
 
 # Other files
 colors-suggestion.txt
-database.db
+database.db/
 backup
 migrations/.migrations
 conf
