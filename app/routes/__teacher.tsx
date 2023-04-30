@@ -53,12 +53,7 @@ const navigation = [
     href: "/",
     icon: HomeIconOutline,
     isPro: false,
-  },
-  {
-    label: "תלמידים",
-    href: "/students",
-    icon: UsersIconOutline,
-    isPro: false,
+    disabled: true,
   },
   {
     label: "מערכת שעות",
@@ -67,16 +62,24 @@ const navigation = [
     isPro: false,
   },
   {
+    label: "רשימת תלמידים",
+    href: "/students",
+    icon: UsersIconOutline,
+    isPro: false,
+  },
+  {
     label: "חומרי לימוד",
     href: "/documents",
     icon: FolderIconOutline,
     isPro: true,
+    disabled: true,
   },
   {
     label: "קבלות",
     href: "/receipts",
     icon: ReceiptPercentIconOutline,
     isPro: true,
+    disabled: true,
   },
   {
     label: "הפרופיל שלי",
@@ -152,9 +155,9 @@ export default function TeacherView() {
                     </div>
                   </Transition.Child>
                   {/* Content (logo & navigation) */}
-                  <div className="h-0 flex-1 overflow-y-auto pt-5 pb-4">
+                  <div className="flex-1 overflow-y-auto pt-5 pb-4">
                     {/* App Logo */}
-                    <div className="mb-5 flex flex-shrink-0 items-center px-4">
+                    <div className="mb-10 flex flex-shrink-0 items-center px-4">
                       <img
                         className="h-8 w-auto"
                         src="/logo-no-text.svg"
