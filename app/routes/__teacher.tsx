@@ -161,7 +161,11 @@ export default function TeacherView() {
                         alt="Portal logo"
                       />
                     </div>
-                    <SideNav navigation={navigation} proEnabled={proEnabled} />
+                    <SideNav
+                      navigation={navigation}
+                      proEnabled={proEnabled}
+                      onClose={() => setSidebarOpen(false)}
+                    />
                   </div>
                   <UpgradeToProCTA />
                 </Dialog.Panel>
@@ -186,7 +190,11 @@ export default function TeacherView() {
                   alt="Portal logo"
                 />
               </div>
-              <SideNav navigation={navigation} proEnabled={proEnabled} />
+              <SideNav
+                navigation={navigation}
+                proEnabled={proEnabled}
+                onClose={() => {}}
+              />
             </div>
 
             {/* Pro CTA notice */}

@@ -11,10 +11,15 @@ type NavItem = {
 type SideNavProps = {
   navigation: NavItem[];
   proEnabled?: boolean;
+  onClose: () => void;
 };
-export default function SideNav({ navigation, proEnabled }: SideNavProps) {
+export default function SideNav({
+  navigation,
+  proEnabled,
+  onClose,
+}: SideNavProps) {
   return (
-    <nav className="space-y-1 bg-white px-2">
+    <nav className="space-y-1 bg-white px-2" onClick={onClose}>
       {navigation.map((item) =>
         item.isPro && !proEnabled ? (
           <button
