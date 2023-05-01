@@ -41,7 +41,7 @@ export default function CalendarGrid({
   const rowHeight = useMemo(
     () =>
       ref
-        ? Math.max(Math.floor(ref.getBoundingClientRect().height / 44), 20)
+        ? Math.max(Math.floor(ref.getBoundingClientRect().height / 44), 16)
         : 0,
     [ref]
   );

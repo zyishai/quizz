@@ -3,13 +3,18 @@ import dayjs from "dayjs";
 import { namedAction, safeRedirect } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { createNewEvent } from "~/handlers/events.server";
-import { createNewLesson, deleteLesson } from "~/handlers/lessons.server";
+import {
+  createNewLesson,
+  deleteLesson,
+  updateLesson,
+} from "~/handlers/lessons.server";
 import {
   modifyLessonDateAndTime,
   modifyLessonLength,
 } from "~/handlers/lessons.server";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
+import { redirectCookie } from "~/utils/cookies.server";
 import { assertNumber, assertString } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
@@ -135,6 +140,61 @@ export const action = async ({ request }: ActionArgs) => {
 
           return redirect(
             `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+          );
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
+    },
+    async updateLessonDetails() {
+      const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const lessonId = formData.get("lessonId");
+          assertString(lessonId);
+          const eventId = formData.get("eventId");
+          assertString(eventId);
+          const dateAndTime = formData.get("datetime")?.toString();
+          const duration = Number(formData.get("duration"));
+          assertNumber(duration);
+          const price = Number(formData.get("price"));
+          assertNumber(price);
+          const studentId = formData.get("studentId");
+          assertString(studentId);
+
+          const lesson = await updateLesson({
+            lessonId,
+            eventId,
+            dateAndTime,
+            duration,
+            price,
+            studentId,
+          });
+          const redirectToCookie = await redirectCookie.getSession(
+            request.headers.get("Cookie")
+          );
+          const rangeStart = dayjs(dateAndTime).startOf("week").toISOString();
+          const rangeEnd = dayjs(dateAndTime).endOf("week").toISOString();
+          redirectToCookie.set(
+            "redirectTo",
+            `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+          );
+
+          return json(
+            {
+              lesson,
+            },
+            {
+              headers: {
+                "Set-Cookie": await redirectCookie.commitSession(
+                  redirectToCookie
+                ),
+              },
+            }
           );
         } else {
           throw new AppError({ errType: ErrorType.TeacherNotFound });

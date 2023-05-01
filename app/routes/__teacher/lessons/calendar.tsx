@@ -1,9 +1,16 @@
-import { ActionArgs, json, LinksFunction, LoaderArgs } from "@remix-run/node";
+import {
+  ActionArgs,
+  json,
+  LinksFunction,
+  LoaderArgs,
+  redirect,
+} from "@remix-run/node";
 import {
   Form,
   useActionData,
   useFetcher,
   useLoaderData,
+  useNavigate,
 } from "@remix-run/react";
 import { IconCalendarPlus } from "~/utils/icons";
 import dayjs from "dayjs";
@@ -29,6 +36,9 @@ import AddLessonModal from "~/components/add-lesson-modal";
 import { getStudents } from "~/handlers/students.server";
 import { XMarkIconSolid } from "~/utils/icons";
 import isMobile from "ismobilejs";
+import EditLessonModal from "~/components/edit-lesson-modal";
+import { Event } from "~/types/event";
+import { redirectCookie } from "~/utils/cookies.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -112,6 +122,19 @@ export const loader = async ({ request }: LoaderArgs) => {
   if (userId) {
     const teacher = await getTeacherByUserId(userId);
     if (teacher) {
+      const redirectToCookie = await redirectCookie.getSession(
+        request.headers.get("Cookie")
+      );
+      const redirectTo = redirectToCookie.get("redirectTo");
+      if (redirectTo && typeof redirectTo === "string") {
+        redirectToCookie.unset("redirectTo");
+        return redirect(redirectTo, {
+          headers: {
+            "Set-Cookie": await redirectCookie.commitSession(redirectToCookie),
+          },
+        });
+      }
+
       const range = await getRange(request);
       const events = await findLessonsInRange(teacher.id, range);
       const students = await getStudents(request);
@@ -149,9 +172,7 @@ export default function LessonsCalendarView() {
       displayDuration: string;
     })[]
   >([]);
-  const [activeMovableLessonId, setActiveMovableLessonId] = useState<
-    string | null
-  >(null);
+  const [editedLessonId, setEditedLessonId] = useState<string | null>(null);
   const fetcher = useFetcher();
   const [showNewLessonModal, setShowNewLessonModal] = useState(false);
 
@@ -324,7 +345,7 @@ export default function LessonsCalendarView() {
                 : 0,
               x: date ? days.length - 1 - date.get("day") : days.length - 1,
               maxW: 1,
-              static: false,
+              static: true,
             };
           }),
         }}
@@ -366,17 +387,20 @@ export default function LessonsCalendarView() {
             <>
               <div
                 className={clsx([
-                  "relative flex flex-1 select-none flex-col items-center justify-center overflow-hidden text-ellipsis rounded-md bg-sky-600 p-1 text-white sm:p-2",
+                  "relative flex-1 select-none overflow-hidden text-ellipsis rounded-md bg-sky-200 px-1 text-blue-900",
                   {
                     "drag-handle":
-                      activeMovableLessonId === id || loaderData.isMobilePhone,
+                      /* activeMovableLessonId === id || */ loaderData.isMobilePhone,
                   },
                 ])}
                 dir="rtl"
-                onMouseOver={() => setActiveMovableLessonId(id)}
-                onMouseUp={() => setActiveMovableLessonId(null)}
+                onClick={() => {
+                  setEditedLessonId(id);
+                }}
+                // onMouseOver={() => setActiveMovableLessonId(id)}
+                // onMouseUp={() => setActiveMovableLessonId(null)}
               >
-                <input
+                {/* <input
                   type="hidden"
                   form="deleteLesson"
                   name="returnToDate"
@@ -401,9 +425,9 @@ export default function LessonsCalendarView() {
                   value={lesson.id}
                 >
                   <XMarkIconSolid className="h-3 w-3" />
-                </button>
+                </button> */}
 
-                <span className="text-sm">
+                <span className="h-4 text-xs">
                   {hasStudentFetched(lesson) ? lesson.student.fullName : null}
                 </span>
               </div>
@@ -466,6 +490,19 @@ export default function LessonsCalendarView() {
         action="/lessons?index"
         open={showNewLessonModal}
         onClose={() => setShowNewLessonModal(false)}
+        students={loaderData.students}
+      />
+      <EditLessonModal
+        action="/lessons?index"
+        open={typeof editedLessonId === "string"}
+        onClose={() => {
+          setEditedLessonId(null);
+        }}
+        lesson={
+          typeof editedLessonId === "string"
+            ? events.find((event) => event.id === editedLessonId)
+            : undefined
+        }
         students={loaderData.students}
       />
     </>
