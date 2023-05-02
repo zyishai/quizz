@@ -4,9 +4,11 @@ import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
 import { CreatePaymentAccountDto, PaymentMethod } from "~/types/payment-account";
 import { AppError } from "~/utils/app-error";
-import { assertNumber, assertString } from "~/utils/misc";
+import { assertNumber, assertString, hasEventFetched } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
-import { finishLesson } from "./lessons.server";
+import { finishLesson, getLesson } from "./lessons.server";
+import { redirectCookie } from "~/utils/cookies.server";
+import dayjs from "dayjs";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
   return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts'] });
@@ -97,7 +99,25 @@ export const makePayment = async (request: Request) => {
             throw new AppError({ errType: ErrorType.PaymentFailed });
           }
 
-          return json({ account });
+          const lesson = await getLesson(teacher.id, lessonId);
+          const redirectToCookie = await redirectCookie.getSession(
+            request.headers.get("Cookie")
+          );
+          if (hasEventFetched(lesson)) {
+            const rangeStart = dayjs(lesson.event.dateAndTime).startOf("week").toISOString();
+            const rangeEnd = dayjs(lesson.event.dateAndTime).endOf("week").toISOString();
+            redirectToCookie.set(
+              "redirectTo",
+              `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+            );
+          }
+          return json({ account }, {
+            headers: {
+              "Set-Cookie": await redirectCookie.commitSession(
+                redirectToCookie
+              ),
+            },
+          });
         } else {
           throw new AppError({ errType: ErrorType.TeacherNotFound });
         }
