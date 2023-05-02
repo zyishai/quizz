@@ -39,6 +39,7 @@ import isMobile from "ismobilejs";
 import EditLessonModal from "~/components/edit-lesson-modal";
 import { Event } from "~/types/event";
 import { redirectCookie } from "~/utils/cookies.server";
+import LessonInfoModal from "~/components/lesson-info-modal";
 
 export const links: LinksFunction = () => {
   return [
@@ -400,33 +401,6 @@ export default function LessonsCalendarView() {
                 // onMouseOver={() => setActiveMovableLessonId(id)}
                 // onMouseUp={() => setActiveMovableLessonId(null)}
               >
-                {/* <input
-                  type="hidden"
-                  form="deleteLesson"
-                  name="returnToDate"
-                  value={
-                    hasEventFetched(lesson) ? lesson.event.dateAndTime : "."
-                  }
-                />
-                <button
-                  type="submit"
-                  form="deleteLesson"
-                  className="cancel-drag absolute top-1 right-1 z-20 rounded-full bg-white/70 p-0.5 text-blue-600"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    if (!confirm("האם ברצונך למחוק את השיעור?")) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }
-                  }}
-                  name="lessonId"
-                  value={lesson.id}
-                >
-                  <XMarkIconSolid className="h-3 w-3" />
-                </button> */}
-
                 <span className="h-4 text-xs">
                   {hasStudentFetched(lesson) ? lesson.student.fullName : null}
                 </span>
@@ -492,8 +466,7 @@ export default function LessonsCalendarView() {
         onClose={() => setShowNewLessonModal(false)}
         students={loaderData.students}
       />
-      <EditLessonModal
-        action="/lessons?index"
+      <LessonInfoModal
         open={typeof editedLessonId === "string"}
         onClose={() => {
           setEditedLessonId(null);

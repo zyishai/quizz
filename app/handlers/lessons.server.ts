@@ -224,7 +224,6 @@ type FinishLessonProps = {
 }
 export const finishLesson = async (props: FinishLessonProps) => {
   const { lessonId, summary } = props;
-  console.log(props);
   
   const lesson = await updateLessonDetails({ lessonId, summary, ended: true });
   if (!lesson) {

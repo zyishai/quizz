@@ -12,6 +12,7 @@ import {
   modifyLessonDateAndTime,
   modifyLessonLength,
 } from "~/handlers/lessons.server";
+import { makePayment } from "~/handlers/payments.server";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
 import { redirectCookie } from "~/utils/cookies.server";
@@ -203,6 +204,7 @@ export const action = async ({ request }: ActionArgs) => {
         throw new AppError({ errType: ErrorType.UserNotFound });
       }
     },
+    makePayment: () => makePayment(request),
   });
 };
 

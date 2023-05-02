@@ -1,7 +1,12 @@
-import { addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails } from "~/adapters/payment.adapter"
+import { json } from "@remix-run/node";
+import { addPaymentToStudentAccount, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails } from "~/adapters/payment.adapter"
+import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
 import { CreatePaymentAccountDto, PaymentMethod } from "~/types/payment-account";
 import { AppError } from "~/utils/app-error";
+import { assertNumber, assertString } from "~/utils/misc";
+import { getUserId } from "~/utils/session.server";
+import { finishLesson } from "./lessons.server";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
   return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts'] });
@@ -71,4 +76,32 @@ export const deleteCreditPayment = async (accountId: string, transactionId: stri
     accountId,
     paymentId: transactionId
   });
+}
+
+export const makePayment = async (request: Request) => {
+  const userId = await getUserId(request);
+      if (userId) {
+        const teacher = await getTeacherByUserId(userId);
+        if (teacher) {
+          const formData = await request.formData();
+          const lessonId = formData.get("lessonId");
+          assertString(lessonId);
+          const sum = Number(formData.get('sum'));
+          assertNumber(sum);
+          const paymentMethod = formData.get('paymentMethod');
+          assertString(paymentMethod);
+          
+          await finishLesson({ lessonId });
+          const account = await addPaymentToStudentAccount(lessonId, { sum, paymentMethod });
+          if (!account) {
+            throw new AppError({ errType: ErrorType.PaymentFailed });
+          }
+
+          return json({ account });
+        } else {
+          throw new AppError({ errType: ErrorType.TeacherNotFound });
+        }
+      } else {
+        throw new AppError({ errType: ErrorType.UserNotFound });
+      }
 }

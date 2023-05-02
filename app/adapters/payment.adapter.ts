@@ -254,3 +254,27 @@ export async function findStudentsWithoutAccount(): Promise<Student[]> {
 
   return students.result;
 }
+
+type AddPaymentToStudentAccountProps = {
+  sum: number;
+  paymentMethod: string;
+}
+export async function addPaymentToStudentAccount(lessonId: string, props: AddPaymentToStudentAccountProps): Promise<PaymentAccount | null> {
+  const { sum, paymentMethod } = props;
+  const db = await getDatabaseInstance();
+  const [account] = await db.query<Result<PaymentAccount[]>[]>(`update paymentAccount set payments += {
+    id: rand::uuid(),
+    type: $creditType,
+    sum: $sum,
+    method: $paymentMethod,
+    student: $lessonId.student,
+    lesson: $lessonId,
+    paidAt: time::now()
+  } where students contains $lessonId.student`, { lessonId, creditType: TransactionType.CREDIT, sum, paymentMethod });
+
+  if (account.error) {
+    throw account.error;
+  }
+
+  return account.result.length > 0 ? account.result[0] : null;
+}

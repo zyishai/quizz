@@ -68,6 +68,13 @@ const navigation = [
     isPro: false,
   },
   {
+    label: "חשבונות ותשלומים",
+    href: "/accounts",
+    icon: CreditCardIconOutline,
+    isPro: false,
+    disabled: true,
+  },
+  {
     label: "חומרי לימוד",
     href: "/documents",
     icon: FolderIconOutline,

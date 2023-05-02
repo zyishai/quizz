@@ -1,3 +1,4 @@
+import { Lesson } from "./lesson";
 import { DateTimeString } from "./misc";
 
 export enum PaymentStatus {

@@ -50,7 +50,7 @@ export default function PaymentAccountsListPage() {
     <>
       <header className="flex flex-wrap items-center justify-between border-b border-gray-200 px-1 pt-1 pb-5">
         <h3 className="text-xl font-medium leading-none text-gray-900">
-          כרטיסיות תלמידים
+          חשבונות ותשלומים
         </h3>
 
         <div className="sm:mt-0 sm:ltr:ml-4 sm:rtl:mr-4">
@@ -65,70 +65,7 @@ export default function PaymentAccountsListPage() {
 
       <section className="mb-5">{/* [TODO] apply filters */}</section>
 
-      <main className="flex-1">
-        <section className="flex flex-1 overflow-hidden">
-          <ul
-            role="list"
-            className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {accounts
-              .filter(haveStudentsFetched)
-              .filter(haveContactsFetched)
-              .map((account, index) => (
-                <li
-                  key={account.id}
-                  className="col-span-1 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white"
-                >
-                  <div className="flex w-full items-center justify-between space-x-6 px-6 py-4 rtl:space-x-reverse sm:py-6">
-                    <div className="flex-1 truncate">
-                      <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <h3 className="truncate text-xl font-bold text-gray-900">
-                          כרטיסיה #{index + 1}
-                        </h3>
-                        {/* <span className="inline-block flex-shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                        </span> */}
-                      </div>
-                      <p className="mt-1 truncate text-sm text-gray-500">
-                        {""}
-                      </p>
-                    </div>
-                    {/* <img className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-300" src={person.imageUrl} alt="" /> */}
-                  </div>
-
-                  <div className="space-x-2 bg-gray-100 px-6 py-3 rtl:space-x-reverse sm:py-4">
-                    <Link
-                      to={`/accounts/${account.id}`}
-                      className="rounded-md bg-white py-2 px-2.5 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:text-base"
-                    >
-                      צפה בכרטיסיה
-                    </Link>
-
-                    <Form method="post" className="inline-block">
-                      <input
-                        type="hidden"
-                        name="accountId"
-                        value={account.id}
-                      />
-                      <button
-                        type="submit"
-                        className="rounded-md bg-red-100 py-1 px-2.5 text-sm font-medium text-red-600 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-200 sm:text-base"
-                        onClick={(e) => {
-                          if (!confirm("למחוק את חשבון תשלום זה?")) {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            return false;
-                          }
-                        }}
-                      >
-                        מחק כרטיסיה
-                      </button>
-                    </Form>
-                  </div>
-                </li>
-              ))}
-          </ul>
-        </section>
-      </main>
+      <main className="flex-1"></main>
 
       <footer className="mt-5 flex flex-col">
         <Link
