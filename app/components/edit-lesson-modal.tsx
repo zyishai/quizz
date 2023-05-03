@@ -24,8 +24,9 @@ export default function EditLessonModal({
   lesson,
   students,
 }: EditLessonProps) {
-  if (!lesson || !hasEventFetched(lesson) || !hasStudentFetched(lesson))
+  if (!lesson || !hasEventFetched(lesson) || !hasStudentFetched(lesson)) {
     return null;
+  }
 
   const dateInputRef = useRef<HTMLInputElement>(null);
   const durationInputRef = useRef<number | null>(null);
@@ -141,9 +142,10 @@ export default function EditLessonModal({
             <RadioGroup
               name="duration"
               className="mt-2"
-              onChange={(value: number) =>
-                (durationInputRef.current = value) && fetchAvailableSlots()
-              }
+              onChange={(value: number) => {
+                durationInputRef.current = value;
+                fetchAvailableSlots();
+              }}
               defaultValue={lesson.event.duration}
             >
               <RadioGroup.Label className="sr-only">
@@ -235,7 +237,7 @@ export default function EditLessonModal({
             className="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
             autoFocus
           >
-            צור שיעור
+            שמור שינויים
           </button>
           <button
             type="button"

@@ -1,12 +1,6 @@
 import Dialog from "./dialog";
-import type { PaymentAccount } from "~/types/payment-account";
-import EditTransactionModal from "./edit-transaction-modal";
-import { useEffect, useRef, useState } from "react";
-import {
-  hasEventFetched,
-  hasStudentFetched,
-  isCreditTransaction,
-} from "~/utils/misc";
+import { useEffect, useState } from "react";
+import { hasEventFetched, hasStudentFetched } from "~/utils/misc";
 import { Form } from "@remix-run/react";
 import { Lesson } from "~/types/lesson";
 import EditLessonModal from "./edit-lesson-modal";
@@ -32,10 +26,10 @@ export default function LessonInfoModal({
   const [ended, setEnded] = useState(!!lesson?.ended);
 
   useEffect(() => {
-    if (lesson) {
+    if (lesson && ended !== lesson.ended) {
       setEnded(!!lesson.ended);
     }
-  }, [lesson]);
+  }, [lesson, ended]);
 
   return (
     <>

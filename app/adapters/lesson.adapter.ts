@@ -85,7 +85,14 @@ export async function createLesson(dto: CreateLessonDto): Promise<Lesson | null>
 
 export async function updateLessonDetails({ lessonId, ...updateData }: UpdateLessonDto): Promise<Lesson | null> {
   const db = await getDatabaseInstance();
-  const lesson = await db.change<Lesson, {}>(lessonId, updateData);
+  const { studentId: student, topic, price, summary, ended } = updateData;
+  const lesson = await db.change<Lesson, {}>(lessonId, {
+    student,
+    topic,
+    price,
+    summary,
+    ended
+  });
   if (Array.isArray(lesson)) {
     return null;
   } else {

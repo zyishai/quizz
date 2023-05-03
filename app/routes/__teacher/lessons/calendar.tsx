@@ -471,11 +471,11 @@ export default function LessonsCalendarView() {
         onClose={() => {
           setEditedLessonId(null);
         }}
-        lesson={
-          typeof editedLessonId === "string"
+        lesson={useMemo(() => {
+          return typeof editedLessonId === "string"
             ? events.find((event) => event.id === editedLessonId)
-            : undefined
-        }
+            : undefined;
+        }, [editedLessonId])}
         students={loaderData.students}
       />
     </>
