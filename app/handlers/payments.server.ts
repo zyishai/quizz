@@ -2,28 +2,20 @@ import { json } from "@remix-run/node";
 import { addPaymentToStudentAccount, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, deletePaymentByIdV2, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails, updatePaymentDetailsV2 } from "~/adapters/payment.adapter"
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
-import { CreatePaymentAccountDto, DebitTransaction, PaymentMethod, Transaction, TransactionType } from "~/types/payment-account";
+import { CreatePaymentAccountDto, PaymentMethod } from "~/types/payment-account";
 import { AppError } from "~/utils/app-error";
 import { assertNumber, assertPaymentMethod, assertString, hasEventFetched } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 import { getLesson } from "./lessons.server";
 import { redirectCookie } from "~/utils/cookies.server";
 import dayjs from "dayjs";
-import { fetchLessonById } from "~/adapters/lesson.adapter";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
-  const accounts = await fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts'] });
-  return await Promise.all(accounts.map(async (account) => ({
-    ...account,
-    transactions: await Promise.all(account.transactions.map(async (tx) => ({
-      ...tx,
-      lesson: await fetchLessonById({ teacherId, lessonId: tx.id, fetch: ['event', 'student'] })
-    }) as Transaction))
-  })));
+  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'transactions.lesson', 'transactions.student'] });
 }
 
 export const getPaymentAccountById = async (teacherId: string, accountId: string) => {
-  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts'] });
+  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'transactions.lesson', 'transactions.student'] });
   if (!account) {
     throw new AppError({ errType: ErrorType.AccountNotFound });
   }

@@ -173,7 +173,7 @@ export default function PaymentAccountsListPage() {
                       ],
                       [] as (Transaction & { account: PaymentAccount })[]
                     )
-                    .slice(0, 10)
+                    .slice(0, 7)
                     .map((tx) => (
                       <Fragment key={tx.id}>
                         <tr className="relative flex">

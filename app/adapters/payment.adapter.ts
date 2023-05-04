@@ -14,7 +14,7 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
     transactions: <future>{ array::sort::asc(
       array::concat(
         payments,
-        (select {type: 'DEBIT', id: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student)
+        (select {type: 'DEBIT', id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student)
       )
     ) },
     payments: [],
@@ -33,7 +33,7 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
 type FetchPaymentAccountProps = {
   teacherId: string;
   accountId: string;
-  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact')[];
+  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'transactions.lesson' | 'transactions.student')[];
 }
 export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: FetchPaymentAccountProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
@@ -49,7 +49,7 @@ export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: F
 }
 
 type FetchPaymentAccountsProps = {
-  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact')[];
+  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'transactions.lesson' | 'transactions.student')[];
 }
 export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount[]> {
   const db = await getDatabaseInstance();
