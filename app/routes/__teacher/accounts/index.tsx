@@ -179,7 +179,7 @@ export default function PaymentAccountsListPage() {
                         ? txb.paidAt
                         : txb.date;
 
-                      return Date.parse(dateTxa) - Date.parse(dateTxb);
+                      return Date.parse(dateTxb) - Date.parse(dateTxa);
                     })
                     .slice(0, 7)
                     .map((tx) => (
