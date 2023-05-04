@@ -1,15 +1,14 @@
 import Dialog from "./dialog";
-import type { PaymentAccount, Transaction } from "~/types/payment-account";
+import type { Payment, PaymentAccount } from "~/types/payment-account";
 import EditTransactionModal from "./edit-transaction-modal";
 import { useState } from "react";
-import { isCreditTransaction } from "~/utils/misc";
 import { Form } from "@remix-run/react";
 
 type TransactionInfoProps = {
   open: boolean;
   onClose: () => void;
   account: PaymentAccount;
-  transaction?: Transaction;
+  transaction?: Payment;
 };
 export default function TransactionInfoModal({
   open,
@@ -74,12 +73,7 @@ export default function TransactionInfoModal({
               setShowEditTransactionModal(false);
               onClose();
             }}
-            account={account}
-            transaction={
-              transaction && isCreditTransaction(transaction)
-                ? transaction
-                : undefined
-            }
+            transaction={transaction}
           />
         </Dialog.Body>
       </Dialog>

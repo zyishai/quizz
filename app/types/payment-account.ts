@@ -10,11 +10,20 @@ export enum PaymentMethod {
   PAYPAL = 'PAYPAL'
 }
 
+export type Billing = {
+  id: string;
+  type: TransactionType.DEBIT;
+  lesson?: Lesson | null | undefined;
+  sum: number;
+  date: DateTimeString;
+}
+
 export type Payment = {
   id: string;
   type: TransactionType.CREDIT,
   sum: number;
   method: PaymentMethod;
+  lesson?: Lesson | null | undefined;
   student: string | Student;
   contact: string | Contact;
   paidAt: DateTimeString;
@@ -45,8 +54,7 @@ export type DebitTransaction = {
 export type Transaction = CreditTransaction | DebitTransaction;
 
 export type PaymentAccount = EntityBase & {
-  balance: number;
-  transactions: readonly Transaction[];
+  billings: Billing[];
   payments: Payment[];
   students: string[] | Student[];
   contacts: string[] | Contact[];

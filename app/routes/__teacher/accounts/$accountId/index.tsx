@@ -1,7 +1,7 @@
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
 import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import clsx from "clsx";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import {
@@ -14,12 +14,7 @@ import { ErrorType } from "~/types/errors";
 import { PaymentMethod } from "~/types/payment-account";
 import { AppError } from "~/utils/app-error";
 import { ArrowRightIconSolid, IconCurrencyShekel } from "~/utils/icons";
-import {
-  assertNumber,
-  assertPaymentMethod,
-  assertString,
-  haveStudentsFetched,
-} from "~/utils/misc";
+import { assertNumber, assertPaymentMethod, assertString } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
 export const action = async ({ request, params }: ActionArgs) => {
@@ -131,7 +126,12 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 
 export default function PaymentAccountInfoPage() {
   const { account } = useLoaderData<typeof loader>();
-  const studentsFetched = haveStudentsFetched(account);
+  const balance = useMemo(() => {
+    return (
+      account.payments.reduce((sum, payment) => sum + payment.sum, 0) +
+      account.billings.reduce((sum, billing) => sum + billing.sum, 0)
+    );
+  }, [account]);
   const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
   const [editTransactionModalTransactionIndex, setShowEditTransactionModal] =
     useState<number | null>(null);
@@ -228,7 +228,7 @@ export default function PaymentAccountInfoPage() {
                 {stat.change}
               </dd> */}
           <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
-            <span dir="ltr">{account.balance}</span>
+            <span dir="ltr">{balance}</span>
             <IconCurrencyShekel className="inline-block leading-9" size={30} />
           </dd>
         </div>

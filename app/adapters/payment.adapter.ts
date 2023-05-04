@@ -10,13 +10,6 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
   const db = await getDatabaseInstance();
 
   const [account] = await db.query<Result<PaymentAccount[]>[]>(`create paymentAccount content {
-    balance: <future>{ math::sum(payments.sum) - math::sum((select price from lesson where $parent.students contains student)) },
-    transactions: <future>{ array::sort::asc(
-      array::concat(
-        payments,
-        (select {type: 'DEBIT', id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student)
-      )
-    ) },
     payments: [],
     students: $students,
     contacts: $contacts,
@@ -33,11 +26,11 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
 type FetchPaymentAccountProps = {
   teacherId: string;
   accountId: string;
-  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'transactions.lesson' | 'transactions.student')[];
+  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'billings.lesson' | 'billings.lesson.student')[];
 }
 export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: FetchPaymentAccountProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
-  let query = 'select * from $accountId where teacher == $teacherId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from $accountId where teacher == $teacherId';
   if (fetch) {
     query += ` fetch ${fetch.join(', ')}`;
   }
@@ -49,12 +42,12 @@ export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: F
 }
 
 type FetchPaymentAccountsProps = {
-  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'transactions.lesson' | 'transactions.student')[];
+  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'billings.lesson' | 'billings.lesson.student')[];
 }
 export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount[]> {
   const db = await getDatabaseInstance();
 
-  let query = 'select * from paymentAccount where teacher == $teacherId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from paymentAccount where teacher == $teacherId';
   if (props?.fetch) {
     query += ` fetch ${props.fetch.join(', ')}`;
   };
@@ -69,7 +62,7 @@ export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?:
 export async function fetchPaymentAccountByStudentId(studentId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
 
-  let query = 'select * from paymentAccount where students contains $studentId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from paymentAccount where students contains $studentId';
   if (props?.fetch) {
     query += ` fetch ${props.fetch.join(', ')}`;
   };

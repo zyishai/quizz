@@ -249,9 +249,13 @@ export const loader = async ({ request }: LoaderArgs) => {
   if (userId) {
     const teacher = await getTeacherByUserId(userId);
     if (teacher) {
+      const now = Date.now();
       const students = await getStudents(request);
+      console.log("students:", dayjs().diff(now, "milliseconds"));
       const accounts = await getPaymentAccountsList(teacher.id);
+      console.log("accounts:", dayjs().diff(now, "milliseconds"));
       const contacts = await getContacts(request);
+      console.log("contacts:", dayjs().diff(now, "milliseconds"));
       return json({ students, accounts, contacts });
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });

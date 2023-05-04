@@ -11,11 +11,11 @@ import { redirectCookie } from "~/utils/cookies.server";
 import dayjs from "dayjs";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
-  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'transactions.lesson', 'transactions.student'] });
+  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'billings.lesson', 'billings.lesson.student'] });
 }
 
 export const getPaymentAccountById = async (teacherId: string, accountId: string) => {
-  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'transactions.lesson', 'transactions.student'] });
+  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'billings.lesson', 'billings.lesson.student'] });
   if (!account) {
     throw new AppError({ errType: ErrorType.AccountNotFound });
   }
@@ -24,7 +24,7 @@ export const getPaymentAccountById = async (teacherId: string, accountId: string
 }
 
 export const findPaymentAccountByStudentId = async (studentId: string) => {
-  return fetchPaymentAccountByStudentId(studentId, { fetch: ['students', 'contacts']});
+  return fetchPaymentAccountByStudentId(studentId, { fetch: ['students', 'contacts', 'billings.lesson']});
 }
 
 export const createNewPaymentAccount = async (dto: CreatePaymentAccountDto) => {
@@ -124,7 +124,6 @@ export const makePayment = async (request: Request) => {
     throw new AppError({ errType: ErrorType.UserNotFound });
   }
 }
-
 export const updatePayment = async (request: Request) => {
   const userId = await getUserId(request);
   if (userId) {

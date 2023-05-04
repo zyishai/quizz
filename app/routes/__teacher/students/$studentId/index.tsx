@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { requireMobile } from "~/utils/mobile.server";
@@ -222,6 +223,12 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 export default function StudentDetails() {
   const { student, account, accounts, contacts } =
     useLoaderData<typeof loader>();
+  const balance = useMemo(() => {
+    return account
+      ? account.payments.reduce((sum, payment) => sum + payment.sum, 0) +
+          account.billings.reduce((sum, billing) => sum + billing.sum, 0)
+      : 0;
+  }, [account]);
   const grade = formatGrade(student.grade);
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [showContactsModal, setShowContactsModal] = useState(false);
@@ -270,7 +277,7 @@ export default function StudentDetails() {
                     <h2 className="text-base font-medium text-gray-800">
                       יתרה:{" "}
                       <span dir="ltr" className="tabular-nums">
-                        {account.balance}
+                        {balance}
                       </span>{" "}
                       <span>&#8362;</span>
                     </h2>

@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { CreditTransaction } from "~/types/payment-account";
+import { Payment } from "~/types/payment-account";
 import Dialog from "./dialog";
 import { IconCurrencyShekel } from "~/utils/icons";
 import { paymentMethods } from "~/utils/payment-methods";
@@ -8,7 +8,7 @@ type EditTransactionProps = {
   open: boolean;
   onClose: () => void;
   action?: string;
-  transaction?: CreditTransaction;
+  transaction?: Payment;
 };
 export default function EditTransactionModal({
   open,

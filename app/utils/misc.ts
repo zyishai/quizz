@@ -4,7 +4,7 @@ import { Event } from "~/types/event";
 import { Replace } from "~/types/misc";
 import { Contact, CreateContactDto, Grade, Student } from "~/types/student";
 import { validator } from '~/utils/validator.server';
-import { CreditTransaction, DebitTransaction, PaymentAccount, PaymentMethod, Transaction, TransactionType } from "~/types/payment-account";
+import { Billing, CreditTransaction, DebitTransaction, Payment, PaymentAccount, PaymentMethod, Transaction, TransactionType } from "~/types/payment-account";
 import { paymentMethods } from "./payment-methods";
 
 export function truthy<T>(value: T | null | undefined): value is T {
@@ -126,10 +126,10 @@ export function haveContactsFetched(value: PaymentAccount): value is Replace<typ
 
   return true;
 }
-export function isCreditTransaction(value: Transaction): value is CreditTransaction {
+export function isCreditTransaction(value: Transaction | Payment | Billing): value is Payment {
   return value.type === TransactionType.CREDIT;
 }
-export function isDebitTransaction(value: Transaction): value is DebitTransaction {
+export function isDebitTransaction(value: Transaction | Payment | Billing): value is Billing {
   return value.type === TransactionType.DEBIT;
 }
 

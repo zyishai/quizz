@@ -16,7 +16,7 @@ import {
   isCreditTransaction,
   isDebitTransaction,
 } from "~/utils/misc";
-import { namedAction, safeRedirect } from "remix-utils";
+import { namedAction } from "remix-utils";
 import {
   BanknotesIconSolid,
   ChevronLeftIconSolid,
@@ -31,9 +31,9 @@ import clsx from "clsx";
 import { Fragment, useState } from "react";
 import WarningAlert from "~/components/WarningAlert";
 import {
-  PaymentAccount,
+  Billing,
+  Payment,
   PaymentMethod,
-  Transaction,
   TransactionType,
 } from "~/types/payment-account";
 import dayjs from "dayjs";
@@ -166,13 +166,21 @@ export default function PaymentAccountsListPage() {
                     .reduce(
                       (transactions, account) => [
                         ...transactions,
-                        ...account.transactions.map((tx) => ({
-                          ...tx,
-                          account,
-                        })),
+                        ...account.payments,
+                        ...account.billings,
                       ],
-                      [] as (Transaction & { account: PaymentAccount })[]
+                      [] as (Payment | Billing)[]
                     )
+                    .sort((txa, txb) => {
+                      const dateTxa = isCreditTransaction(txa)
+                        ? txa.paidAt
+                        : txa.date;
+                      const dateTxb = isCreditTransaction(txb)
+                        ? txb.paidAt
+                        : txb.date;
+
+                      return Date.parse(dateTxa) - Date.parse(dateTxb);
+                    })
                     .slice(0, 7)
                     .map((tx) => (
                       <Fragment key={tx.id}>
