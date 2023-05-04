@@ -257,7 +257,7 @@ export async function findStudentsWithoutAccount(): Promise<Student[]> {
 
 type AddPaymentToStudentAccountProps = {
   sum: number;
-  paymentMethod: string;
+  paymentMethod: PaymentMethod;
 }
 export async function addPaymentToStudentAccount(lessonId: string, props: AddPaymentToStudentAccountProps): Promise<PaymentAccount | null> {
   const { sum, paymentMethod } = props;
@@ -277,4 +277,52 @@ export async function addPaymentToStudentAccount(lessonId: string, props: AddPay
   }
 
   return account.result.length > 0 ? account.result[0] : null;
+}
+
+type UpdatePaymentV2Props = {
+  sum: number;
+  paymentMethod: PaymentMethod;
+}
+export async function updatePaymentDetailsV2(paymentId: string, props: UpdatePaymentV2Props): Promise<PaymentAccount | null> {
+  const { sum, paymentMethod } = props;
+  const db = await getDatabaseInstance();
+
+  const [accounts] = await db.query<Result<PaymentAccount[]>[]>('select * from paymentAccount where payments.id contains $paymentId', { paymentId });
+  if (accounts.error) {
+    throw accounts.error;
+  }
+
+  if (accounts.result.length > 0) {
+    const account = accounts.result[0];
+    const payment = account.payments.find((p) => p.id === paymentId);
+    if (!payment) {
+      return null;
+    }
+    if (typeof sum === 'number') {
+      payment.sum = sum;
+    }
+    if (paymentMethod) {
+      payment.method = paymentMethod;
+    }
+
+    const [results] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set payments[where id == $paymentId] = $payment', { accountId: account.id, paymentId, payment });
+    if (results.error) {
+      throw results.error;
+    }
+
+    return results.result.length > 0 ? results.result[0] : null;
+  }
+
+  return null;
+}
+
+export async function deletePaymentByIdV2(paymentId: string): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+
+  const [accounts] = await db.query<Result<PaymentAccount[]>[]>('update paymentAccount set payments -= payments[where id == $paymentId] where payments.id contains $paymentId', { paymentId });
+  if (accounts.error) {
+    throw accounts.error;
+  }
+
+  return accounts.result.length > 0 ? accounts.result[0] : null;
 }

@@ -1,15 +1,9 @@
-import { Menu, Transition } from "@headlessui/react";
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
-import { Form, Link, useLoaderData, useLocation } from "@remix-run/react";
+import { Link, useLoaderData, useLocation } from "@remix-run/react";
 import clsx from "clsx";
-import dayjs from "dayjs";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
-import EditTransactionModal from "~/components/edit-transaction-modal";
-import MakePaymentModal from "~/components/make-payment-modal";
-import StudentAvatar from "~/components/student-avatar";
-import TransactionInfoModal from "~/components/transaction-info-modal";
 import {
   addPaymentToAccount,
   deleteCreditPayment,
@@ -17,26 +11,14 @@ import {
   getPaymentAccountById,
 } from "~/handlers/payments.server";
 import { ErrorType } from "~/types/errors";
-import {
-  CreditTransaction,
-  PaymentMethod,
-  TransactionType,
-} from "~/types/payment-account";
+import { PaymentMethod } from "~/types/payment-account";
 import { AppError } from "~/utils/app-error";
-import {
-  ArrowRightIconSolid,
-  ChevronDownIconSolid,
-  IconArrowBigDownFilled,
-  IconArrowBigUpFilled,
-  IconPlus,
-} from "~/utils/icons";
+import { ArrowRightIconSolid, IconCurrencyShekel } from "~/utils/icons";
 import {
   assertNumber,
   assertPaymentMethod,
   assertString,
   haveStudentsFetched,
-  isCreditTransaction,
-  isDebitTransaction,
 } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
@@ -163,7 +145,7 @@ export default function PaymentAccountInfoPage() {
       <header className="mb-5 border-b border-gray-200 px-4 pb-2">
         <h1 className="flex items-center text-lg text-gray-800">
           <Link
-            to={searchParams.get("returnTo") || "/students"}
+            to={"/accounts" || searchParams.get("returnTo") || "/students"}
             className="inline-block ltr:mr-2 rtl:ml-2 sm:mt-1"
           >
             <ArrowRightIconSolid className="h-5 w-auto" />
@@ -172,7 +154,87 @@ export default function PaymentAccountInfoPage() {
         </h1>
       </header>
 
-      <div className="flex-1 overflow-auto">
+      <section className="my-2">
+        {/* [TODO] apply filters */}
+        <ul className="flex gap-x-3 gap-y-3 text-sm font-semibold">
+          <li className="relative">
+            <a
+              href="?display=week"
+              className={clsx([
+                { "text-gray-500": !location.search.includes("display=week") },
+                { "text-indigo-600": location.search.includes("display=week") },
+              ])}
+            >
+              שבוע נוכחי
+            </a>
+            <span
+              className={clsx([
+                "absolute left-0 -bottom-2 w-full border-b-2 border-indigo-600",
+                { block: location.search.includes("display=week") },
+                { hidden: !location.search.includes("display=week") },
+              ])}
+            ></span>
+          </li>
+          <li className="relative">
+            <a
+              href="?display=month"
+              className={clsx([
+                { "text-gray-500": !location.search.includes("display=month") },
+                {
+                  "text-indigo-600": location.search.includes("display=month"),
+                },
+              ])}
+            >
+              חודש נוכחי
+            </a>
+            <span
+              className={clsx([
+                "absolute left-0 -bottom-2 w-full border-b-2 border-indigo-600",
+                { block: location.search.includes("display=month") },
+                { hidden: !location.search.includes("display=month") },
+              ])}
+            ></span>
+          </li>
+          <li className="relative">
+            <a
+              href="?display=all"
+              className={clsx([
+                { "text-gray-500": !location.search.includes("display=all") },
+                { "text-indigo-600": location.search.includes("display=all") },
+              ])}
+            >
+              כל הזמן
+            </a>
+            <span
+              className={clsx([
+                "absolute left-0 -bottom-2 w-full border-b-2 border-indigo-600",
+                { block: location.search.includes("display=all") },
+                { hidden: !location.search.includes("display=all") },
+              ])}
+            ></span>
+          </li>
+        </ul>
+      </section>
+
+      <main className="flex-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-y-0 gap-x-4 border-t border-b border-gray-900/5 px-4 py-5 sm:px-6 lg:border-t-0 xl:px-8">
+          <dt className="text-sm font-medium leading-6 text-gray-500">מאזן</dt>
+          {/* <dd
+                className={classNames(
+                  stat.changeType === 'negative' ? 'text-rose-600' : 'text-gray-700',
+                  'text-xs font-medium'
+                )}
+              >
+                {stat.change}
+              </dd> */}
+          <dd className="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900">
+            <span dir="ltr">{account.balance}</span>
+            <IconCurrencyShekel className="inline-block leading-9" size={30} />
+          </dd>
+        </div>
+      </main>
+
+      {/* <div className="flex-1 overflow-auto">
         <div className="mb-5">
           <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-5 shadow sm:p-6">
@@ -186,22 +248,6 @@ export default function PaymentAccountInfoPage() {
                 <span>&#8362;</span>
               </dd>
             </div>
-            {/* <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="truncate text-sm font-medium text-gray-500">
-                מאזן חודשי
-              </dt>
-              <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
-                {item.stat}
-              </dd>
-            </div> */}
-            {/* <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-              <dt className="truncate text-sm font-medium text-gray-500">
-                {item.name}
-              </dt>
-              <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
-                {item.stat}
-              </dd>
-            </div> */}
           </dl>
         </div>
 
@@ -226,31 +272,6 @@ export default function PaymentAccountInfoPage() {
                 </Link>
               ))}
             </div>
-
-            {/* <ul
-              role="list"
-              className="divide-y-0 divide-gray-200 overflow-auto sm:hidden"
-            >
-              {account.students.map((student) => (
-                <li key={student.id}>
-                  <Link
-                    to={`/students/${student.id}`}
-                    className="flex items-center py-4 first:py-2"
-                  >
-                    <StudentAvatar
-                      fullName={student.fullName}
-                      size={26}
-                      radius={999}
-                    />
-                    <div className="ltr:ml-2.5 rtl:mr-2.5">
-                      <p className="text-sm font-medium text-gray-900">
-                        {student.fullName}
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul> */}
           </div>
         )}
 
@@ -272,8 +293,7 @@ export default function PaymentAccountInfoPage() {
               <span>הוסף תשלום</span>
             </button>
           </div>
-
-          {/* Transactions list (only on smallest breakpoint) */}
+          Transactions list (only on smallest breakpoint)
           <ul role="list" className="flex-1 divide-y divide-gray-200 sm:hidden">
             {account.transactions
               .sort((a, b) => {
@@ -337,8 +357,7 @@ export default function PaymentAccountInfoPage() {
                 </li>
               ))}
           </ul>
-
-          {/* Transactions table (small breakpoint and up) */}
+          Transactions table (small breakpoint and up)
           <div className="hidden flex-1 overflow-hidden sm:block">
             <div className="block h-full min-w-full overflow-y-scroll border-b border-gray-200 align-middle">
               <table className="min-w-full border-separate border-spacing-0">
@@ -518,35 +537,6 @@ export default function PaymentAccountInfoPage() {
                               </Transition>
                             </Menu>
                           ) : null}
-                          {/* <div className="flex divide-x divide-gray-200 rtl:divide-x-reverse">
-                          {isCreditTransaction(transaction) ? <Link
-                            to={`/accounts/${account.id}/transactions/${transaction.id}/edit`}
-                            className="px-3 text-indigo-600 hover:text-indigo-900"
-                          >
-                            עריכה
-                          </Link> : null}
-                          <Form method="post" className="group">
-                            <input
-                              type="hidden"
-                              name="transactionId"
-                              value={transaction.id}
-                            />
-                            <button
-                              type="submit"
-                              className="px-3 text-indigo-600 group-hover:text-indigo-900"
-                              onClick={(e) => {
-                                if (!confirm("האם ברצונך למחוק את התלמיד?")) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  return false;
-                                }
-                                return true;
-                              }}
-                            >
-                              מחק
-                            </button>
-                          </Form>
-                        </div> */}
                         </td>
                       </tr>
                     ))}
@@ -597,7 +587,7 @@ export default function PaymentAccountInfoPage() {
           />
           <span>הוסף תשלום</span>
         </button>
-      </footer>
+      </footer> */}
     </>
   );
 }

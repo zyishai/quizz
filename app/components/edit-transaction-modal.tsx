@@ -1,26 +1,21 @@
 import { Form } from "@remix-run/react";
-import { CreditTransaction, PaymentAccount } from "~/types/payment-account";
+import { CreditTransaction } from "~/types/payment-account";
 import Dialog from "./dialog";
 import { IconCurrencyShekel } from "~/utils/icons";
 import { paymentMethods } from "~/utils/payment-methods";
-import { haveStudentsFetched } from "~/utils/misc";
 
 type EditTransactionProps = {
   open: boolean;
   onClose: () => void;
   action?: string;
-  account: PaymentAccount;
   transaction?: CreditTransaction;
 };
 export default function EditTransactionModal({
   open,
   onClose,
   action,
-  account,
   transaction,
 }: EditTransactionProps) {
-  const studentsFetched = haveStudentsFetched(account);
-
   return (
     <Dialog open={open} onClose={onClose} title="ערוך תשלום">
       <Dialog.Body>
@@ -33,8 +28,7 @@ export default function EditTransactionModal({
           id="edit-transaction-form"
           onSubmit={onClose}
         >
-          <input type="hidden" name="_action" value="editTransaction" />
-          <input type="hidden" name="accountId" value={account.id} />
+          <input type="hidden" name="_action" value="updatePayment" />
           <input type="hidden" name="transactionId" value={transaction?.id} />
 
           <div className="flex space-x-2 rtl:space-x-reverse">
@@ -65,14 +59,14 @@ export default function EditTransactionModal({
 
             <div>
               <label
-                htmlFor="method"
+                htmlFor="paymentMethod"
                 className="block text-sm font-semibold text-gray-500"
               >
                 אופן תשלום
               </label>
               <select
-                id="method"
-                name="method"
+                id="paymentMethod"
+                name="paymentMethod"
                 className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-1 px-3 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:py-2 sm:text-sm"
                 defaultValue={transaction?.method}
                 aria-required="true"
@@ -85,30 +79,6 @@ export default function EditTransactionModal({
               </select>
             </div>
           </div>
-
-          {studentsFetched ? (
-            <div className="mt-5">
-              <label
-                htmlFor="method"
-                className="block text-sm font-semibold text-gray-500"
-              >
-                בחר תלמיד עבורו בוצע התשלום
-              </label>
-              <select
-                id="studentId"
-                name="studentId"
-                className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-1 px-3 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:py-2 sm:text-sm"
-                defaultValue={transaction?.student}
-                aria-required="true"
-              >
-                {account.students.map((student) => (
-                  <option value={student.id} key={student.id}>
-                    {student.fullName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
         </Form>
       </Dialog.Body>
 

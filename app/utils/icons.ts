@@ -13,7 +13,11 @@ export {
   IconLineDotted,
   IconChevronDown,
   IconArrowsMove,
-  IconArrowsVertical
+  IconArrowsVertical,
+  IconBrandPaypal,
+  IconCoins,
+  IconCreditCard,
+  IconCalendarEvent
 } from '@tabler/icons-react';
 export { 
   MapPinIcon as MapPinIconOutline, 
@@ -49,5 +53,6 @@ export {
   EllipsisHorizontalCircleIcon as EllipsisHorizontalCircleIconSolid,
   PlusSmallIcon as PlusSmallIconSolid,
   InformationCircleIcon as InformationCircleIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid
+  CheckCircleIcon as CheckCircleIconSolid,
+  BanknotesIcon as BanknotesIconSolid
 } from '@heroicons/react/24/solid';

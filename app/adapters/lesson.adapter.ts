@@ -73,7 +73,7 @@ export async function createLesson(dto: CreateLessonDto): Promise<Lesson | null>
     price: $price,
     address: '',
     summary: '',
-    ended: false,
+    ended: <future> { math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) >= $price * $eventId.duration / 60 },
     createdAt: time::now()
   }`, dto);
   if (lesson.error) {
@@ -85,13 +85,12 @@ export async function createLesson(dto: CreateLessonDto): Promise<Lesson | null>
 
 export async function updateLessonDetails({ lessonId, ...updateData }: UpdateLessonDto): Promise<Lesson | null> {
   const db = await getDatabaseInstance();
-  const { studentId: student, topic, price, summary, ended } = updateData;
+  const { studentId: student, topic, price, summary } = updateData;
   const lesson = await db.change<Lesson, {}>(lessonId, {
     student,
     topic,
     price,
     summary,
-    ended
   });
   if (Array.isArray(lesson)) {
     return null;

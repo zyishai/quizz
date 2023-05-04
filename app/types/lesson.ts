@@ -23,4 +23,4 @@ export type CreateLessonDto = {
 export type UpdateLessonDto = {
   lessonId: string;
   studentId?: string;
-} & Partial<Pick<Lesson, 'topic'|'summary'|'price'|'ended'>>
+} & Partial<Pick<Lesson, 'topic'|'summary'|'price'>>

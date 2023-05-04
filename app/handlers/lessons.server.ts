@@ -225,7 +225,7 @@ type FinishLessonProps = {
 export const finishLesson = async (props: FinishLessonProps) => {
   const { lessonId, summary } = props;
   
-  const lesson = await updateLessonDetails({ lessonId, summary, ended: true });
+  const lesson = await updateLessonDetails({ lessonId, summary });
   if (!lesson) {
     throw new AppError({ errType: ErrorType.LessonUpdateFailed });
   }
