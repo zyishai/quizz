@@ -213,7 +213,7 @@ export default function PaymentAccountsListPage() {
                                   </span>
                                   <IconCurrencyShekel className="h-5 w-auto" />
                                 </div>
-                                <div className="mt-1 text-xs leading-5 text-gray-500">
+                                <div className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">
                                   {isCreditTransaction(tx)
                                     ? `תשלום: ${formatPaymentMethod(tx.method)}`
                                     : "שיעור"}
@@ -228,7 +228,7 @@ export default function PaymentAccountsListPage() {
                             tx?.lesson &&
                             hasStudentFetched(tx.lesson) ? (
                               <>
-                                <div className="text-sm leading-6 text-gray-900">
+                                <div className="text-sm leading-6 text-gray-900 sm:text-base">
                                   {tx.lesson.student.fullName}
                                 </div>
                                 <div className="mt-1 text-xs leading-5 text-gray-500">
@@ -241,8 +241,11 @@ export default function PaymentAccountsListPage() {
                             {isDebitTransaction(tx) ? (
                               <div className="flex justify-end sm:justify-start">
                                 <Link
-                                  to={`/lessons/calendar#${tx.id}`}
-                                  className="rounded-md border-0 border-sky-400 bg-sky-50 px-2 py-1 text-xs text-sky-700 hover:bg-sky-100"
+                                  to={{
+                                    pathname: "/lessons/calendar",
+                                    search: `?l=${tx.id}`,
+                                  }}
+                                  className="rounded-md border-0 border-sky-400 bg-sky-50 px-2 py-1 text-xs text-sky-700 hover:bg-sky-100 sm:rounded-lg sm:bg-sky-100 sm:px-3 sm:text-sm sm:hover:bg-sky-200"
                                 >
                                   הצג שיעור
                                 </Link>
@@ -251,7 +254,7 @@ export default function PaymentAccountsListPage() {
                               <div className="flex items-center justify-end gap-x-3 sm:justify-start">
                                 <button
                                   type="button"
-                                  className="rounded-md border-0 border-sky-400 bg-sky-50 px-2 py-1 text-xs text-sky-700 hover:bg-sky-100"
+                                  className="rounded-md border-0 border-sky-400 bg-sky-50 px-2 py-1 text-xs text-sky-700 hover:bg-sky-100 sm:rounded-lg sm:bg-sky-100 sm:px-3 sm:text-sm sm:hover:bg-sky-200"
                                   onClick={() => setEditedPaymentId(tx.id)}
                                 >
                                   ערוך תשלום
@@ -269,7 +272,7 @@ export default function PaymentAccountsListPage() {
                                   />
                                   <button
                                     type="submit"
-                                    className="rounded-md border-0 border-red-400 bg-red-50 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
+                                    className="rounded-md border-0 border-red-400 bg-red-50 px-2 py-1 text-xs text-red-500 hover:bg-red-100 sm:rounded-lg sm:bg-red-100 sm:px-3 sm:text-sm sm:hover:bg-red-200"
                                     onClick={(e) => {
                                       if (!confirm(`למחוק את התשלום?`)) {
                                         e.preventDefault();

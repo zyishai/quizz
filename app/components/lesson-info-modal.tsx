@@ -61,8 +61,12 @@ export default function LessonInfoModal({
             >
               {ended ? "תשלום בוצע" : "בצע תשלום עבור שיעור זה"}
             </button>
-            <Form method="post" className="mt-3 w-full">
-              <input type="hidden" name="_action" value="deleteLesson" />
+            <Form method="post" className="mt-3 w-full" action="/lessons?index">
+              <input
+                type="hidden"
+                name="_action"
+                value="deleteScheduledLesson"
+              />
               <input type="hidden" name="lessonId" value={lesson?.id} />
               <button
                 type="submit"

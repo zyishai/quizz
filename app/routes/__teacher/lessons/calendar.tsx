@@ -10,15 +10,15 @@ import {
   useActionData,
   useFetcher,
   useLoaderData,
-  useNavigate,
+  useSearchParams,
 } from "@remix-run/react";
 import { IconCalendarPlus } from "~/utils/icons";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
-import { findLessonsInRange } from "~/handlers/lessons.server";
-import { OffsetUnit } from "~/types/datetime";
+import { findLessonsInRange, getLesson } from "~/handlers/lessons.server";
+import { DateRange, OffsetUnit } from "~/types/datetime";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
 import { getRange } from "~/utils/calendar";
@@ -34,10 +34,7 @@ import { formatDuration, formatTime24FromMinutes } from "~/utils/format";
 import clsx from "clsx";
 import AddLessonModal from "~/components/add-lesson-modal";
 import { getStudents } from "~/handlers/students.server";
-import { XMarkIconSolid } from "~/utils/icons";
 import isMobile from "ismobilejs";
-import EditLessonModal from "~/components/edit-lesson-modal";
-import { Event } from "~/types/event";
 import { redirectCookie } from "~/utils/cookies.server";
 import LessonInfoModal from "~/components/lesson-info-modal";
 
@@ -136,7 +133,20 @@ export const loader = async ({ request }: LoaderArgs) => {
         });
       }
 
-      const range = await getRange(request);
+      const searchParams = new URL(request.url).searchParams;
+      let range: DateRange;
+      if (searchParams.has("l")) {
+        const lesson = await getLesson(teacher.id, searchParams.get("l") || "");
+        if (!hasEventFetched(lesson)) {
+          throw new AppError({ errType: ErrorType.LessonNotFound });
+        }
+        range = {
+          start: dayjs(lesson.event.dateAndTime).startOf("week").toISOString(),
+          end: dayjs(lesson.event.dateAndTime).endOf("week").toISOString(),
+        };
+      } else {
+        range = await getRange(request);
+      }
       const events = await findLessonsInRange(teacher.id, range);
       const students = await getStudents(request);
       const userAgent = request.headers.get("user-agent");
@@ -166,6 +176,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 export default function LessonsCalendarView() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [searchParams] = useSearchParams();
   const [lessons, setLessons] = useState<
     (Lesson & {
       displayDate: string;
@@ -386,25 +397,12 @@ export default function LessonsCalendarView() {
           const lesson = lessons.find((l) => l.id === id);
           return lesson ? (
             <>
-              <div
-                className={clsx([
-                  "relative flex-1 select-none overflow-hidden text-ellipsis rounded-md bg-sky-200 px-1 text-blue-900",
-                  {
-                    "drag-handle":
-                      /* activeMovableLessonId === id || */ loaderData.isMobilePhone,
-                  },
-                ])}
-                dir="rtl"
-                onClick={() => {
-                  setEditedLessonId(id);
-                }}
-                // onMouseOver={() => setActiveMovableLessonId(id)}
-                // onMouseUp={() => setActiveMovableLessonId(null)}
-              >
-                <span className="h-4 text-xs">
-                  {hasStudentFetched(lesson) ? lesson.student.fullName : null}
-                </span>
-              </div>
+              <CalendarEntry
+                lesson={lesson}
+                isMobile={loaderData.isMobilePhone}
+                searchParams={searchParams}
+                onClick={setEditedLessonId}
+              />
             </>
           ) : null;
         }}
@@ -479,5 +477,56 @@ export default function LessonsCalendarView() {
         students={loaderData.students}
       />
     </>
+  );
+}
+
+type CalendarEntryProps = {
+  lesson: Lesson;
+  isMobile: boolean;
+  searchParams: URLSearchParams;
+  onClick: (id: string) => void;
+};
+function CalendarEntry({
+  lesson,
+  isMobile,
+  searchParams,
+  onClick,
+}: CalendarEntryProps) {
+  useEffect(() => {
+    if (lesson.id === searchParams.get("l")) {
+      setTimeout(() => {
+        document
+          .getElementById(lesson.id)
+          ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "end" });
+      }, 500);
+    }
+  }, []);
+
+  return (
+    <div
+      id={lesson.id}
+      className={clsx([
+        "relative flex-1 select-none overflow-hidden text-ellipsis rounded-md bg-sky-200 px-1 text-blue-900",
+        {
+          "drag-handle": /* activeMovableLessonId === id || */ isMobile,
+        },
+        {
+          "border-2 border-indigo-600/70": searchParams.get("l") === lesson.id,
+        },
+      ])}
+      dir="rtl"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick(lesson.id);
+        return false;
+      }}
+      // onMouseOver={() => setActiveMovableLessonId(id)}
+      // onMouseUp={() => setActiveMovableLessonId(null)}
+    >
+      <span className="h-4 text-xs">
+        {hasStudentFetched(lesson) ? lesson.student.fullName : null}
+      </span>
+    </div>
   );
 }
