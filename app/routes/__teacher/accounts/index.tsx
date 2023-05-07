@@ -109,7 +109,7 @@ export default function PaymentAccountsListPage() {
           <>
             <ul role="list" className="divide-y divide-gray-100 px-4 sm:hidden">
               {accounts
-                .slice(0, 6)
+                .slice(0, showAllAccounts ? -1 : 4)
                 .filter(
                   (account) =>
                     haveStudentsFetched(account) && haveContactsFetched(account)
@@ -143,6 +143,27 @@ export default function PaymentAccountsListPage() {
                     </Link>
                   </li>
                 ))}
+              {!showAllAccounts ? (
+                <li className="flex">
+                  <button
+                    type="button"
+                    className="flex-1 py-5 text-sm text-gray-500"
+                    onClick={() => setShowAllAccounts(true)}
+                  >
+                    <span>הצג הכל</span>
+                  </button>
+                </li>
+              ) : (
+                <li className="flex">
+                  <button
+                    type="button"
+                    className="flex-1 py-5 text-sm text-gray-500"
+                    onClick={() => setShowAllAccounts(false)}
+                  >
+                    <span>הצג פחות</span>
+                  </button>
+                </li>
+              )}
             </ul>
             <ul
               role="list"
