@@ -78,16 +78,18 @@ export const loader = async ({ request }: LoaderArgs) => {
 export default function PaymentAccountsListPage() {
   const { accounts } = useLoaderData<typeof loader>();
   const [editedPaymentId, setEditedPaymentId] = useState<string | null>(null);
+  const [showAllAccounts, setShowAllAccounts] = useState(false);
 
   return (
     <>
       <main
         className={clsx([
           "flex flex-1 flex-col overflow-y-auto",
-          { " bg-gray-0": accounts.length > 0 },
+          { "bg-gray-0": accounts.length > 0 },
+          { "sm:overflow-hidden": !showAllAccounts },
         ])}
       >
-        <section className="flex flex-wrap items-center justify-between gap-2 border-b-0 border-gray-200 px-1 pt-1 pb-2">
+        <section className="flex flex-wrap items-center justify-between gap-2 border-b-0 border-gray-200 px-1 pt-1 pb-3 sm:pb-5">
           <h3 className="text-xl font-semibold leading-none text-gray-900">
             כרטיסיות תשלום
           </h3>
@@ -104,53 +106,132 @@ export default function PaymentAccountsListPage() {
         </section>
 
         {accounts.length > 0 ? (
-          <ul role="list" className="divide-y divide-gray-100 px-4">
-            {accounts
-              .slice(0, 6)
-              .filter(
-                (account) =>
-                  haveStudentsFetched(account) && haveContactsFetched(account)
-              )
-              .map((account) => (
-                <li
-                  key={account.id}
-                  className="flex items-center justify-start py-5"
-                >
-                  <div className="grid h-9 w-9 flex-none place-content-center rounded-lg bg-emerald-200 ltr:mr-3 rtl:ml-3">
-                    <BanknotesIconSolid className="h-4 w-4 text-emerald-800" />
-                  </div>
-                  <div className="flex flex-1 gap-x-4">
-                    <div className="min-w-0 flex-auto">
-                      {haveStudentsFetched(account) && (
-                        <p className="text-sm font-medium leading-5 text-gray-900">
-                          {account.students
-                            .map((student) => student.fullName)
-                            .join(", ")}
-                        </p>
-                      )}
-                      {/* <p className="mt-1 truncate text-xs leading-5 text-gray-500">{person.email}</p> */}
-                    </div>
-                  </div>
-                  <Link
-                    to={`/accounts/${account.id}`}
-                    className="flex items-center gap-x-1 text-xs font-medium text-gray-700"
+          <>
+            <ul role="list" className="divide-y divide-gray-100 px-4 sm:hidden">
+              {accounts
+                .slice(0, 6)
+                .filter(
+                  (account) =>
+                    haveStudentsFetched(account) && haveContactsFetched(account)
+                )
+                .map((account) => (
+                  <li
+                    key={account.id}
+                    className="flex items-center justify-start py-5"
                   >
-                    <span>עוד</span>
-                    <ChevronLeftIconSolid className="inline-block h-3.5 w-3.5" />
-                  </Link>
+                    <div className="grid h-9 w-9 flex-none place-content-center rounded-lg bg-emerald-200 ltr:mr-3 rtl:ml-3">
+                      <BanknotesIconSolid className="h-4 w-4 text-emerald-800" />
+                    </div>
+                    <div className="flex flex-1 gap-x-4">
+                      <div className="min-w-0 flex-auto">
+                        {haveStudentsFetched(account) && (
+                          <p className="text-sm font-medium leading-5 text-gray-900">
+                            {account.students
+                              .map((student) => student.fullName)
+                              .join(", ")}
+                          </p>
+                        )}
+                        {/* <p className="mt-1 truncate text-xs leading-5 text-gray-500">{person.email}</p> */}
+                      </div>
+                    </div>
+                    <Link
+                      to={`/accounts/${account.id}`}
+                      className="flex items-center gap-x-1 text-xs font-medium text-gray-700"
+                    >
+                      <span>עוד</span>
+                      <ChevronLeftIconSolid className="inline-block h-3.5 w-3.5" />
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+            <ul
+              role="list"
+              className="hidden grid-cols-4 gap-x-6 gap-y-8 sm:grid xl:gap-x-8"
+            >
+              {accounts.slice(0, showAllAccounts ? -1 : 3).map((account) => {
+                const balance =
+                  account.billings.reduce(
+                    (sum, billing) => sum + billing.sum,
+                    0
+                  ) +
+                  account.payments.reduce(
+                    (sum, payment) => sum + payment.sum,
+                    0
+                  );
+                return (
+                  <li
+                    key={account.id}
+                    className="overflow-hidden rounded-xl border border-gray-300 shadow-sm"
+                  >
+                    <div className="bg-gray-0 flex items-center gap-x-2.5 border-b border-gray-900/5 bg-white px-6 py-3">
+                      <div className="grid h-11 w-11 flex-none place-content-center rounded-lg border border-gray-300 bg-white ltr:mr-3 rtl:ml-3">
+                        <BanknotesIconSolid className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <div className="">
+                        {haveStudentsFetched(account) ? (
+                          <>
+                            <dd className="text-lg font-medium leading-6 text-gray-600">
+                              {account.students[0].fullName}
+                            </dd>
+                            <dt className="flex items-center text-sm leading-6 text-gray-500">
+                              <span dir="ltr" className="tabular-nums">
+                                {balance}
+                              </span>
+                              <IconCurrencyShekel className="inline-block h-4 w-auto" />
+                            </dt>
+                          </>
+                        ) : (
+                          <>
+                            <dd className="flex items-center gap-x-0.5 text-base font-medium text-gray-700">
+                              <span dir="ltr" className="tabular-nums">
+                                {balance}
+                              </span>
+                              <IconCurrencyShekel className="h-5 w-auto" />
+                            </dd>
+                            <dt className="text-sm text-gray-500">
+                              יתרה בחשבון
+                            </dt>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="w-full bg-gray-50 px-6 py-3 text-center text-sm leading-6 text-gray-800 shadow-sm hover:bg-gray-100"
+                    >
+                      צפה בפרטי החשבון
+                    </button>
+                  </li>
+                );
+              })}
+              {!showAllAccounts && (
+                <li className="flex rounded-xl">
+                  <button
+                    type="button"
+                    className="flex-1 rounded-xl border-2 border-dashed border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-600"
+                    onClick={() => setShowAllAccounts(true)}
+                  >
+                    <span>הצג הכל</span>
+                  </button>
                 </li>
-              ))}
-          </ul>
+              )}
+            </ul>
+          </>
         ) : (
           <WarningAlert title="אין כרטיסיות">
             <p>צור כרטיסיה חדשה כדי להתחיל.</p>
           </WarningAlert>
         )}
 
-        <h2 className="mt-6 text-base font-semibold leading-6 text-gray-900">
+        <h2 className="mt-11 text-lg font-semibold leading-6 text-gray-900">
           תנועות אחרונות בכל הכרטיסיות
         </h2>
-        <div className="mt-2 flex-1 border-t border-gray-100">
+        <div
+          className={clsx([
+            "mt-2 flex-1 border-t border-gray-100",
+            { "sm:overflow-y-auto": !showAllAccounts },
+          ])}
+        >
           <div className="px-4">
             <div className="">
               <table className="w-full text-right">
