@@ -51,7 +51,14 @@ export type DebitTransaction = {
   date: DateTimeString;
 };
 
-export type Transaction = CreditTransaction | DebitTransaction;
+export type Transaction = {
+  id: string;
+  method?: PaymentMethod;
+  date: DateTimeString;
+  debit?: number;
+  credit?: number;
+  notes?: string;
+};
 
 export type PaymentAccount = EntityBase & {
   billings: Billing[];

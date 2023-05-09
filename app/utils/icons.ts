@@ -54,5 +54,8 @@ export {
   PlusSmallIcon as PlusSmallIconSolid,
   InformationCircleIcon as InformationCircleIconSolid,
   CheckCircleIcon as CheckCircleIconSolid,
-  BanknotesIcon as BanknotesIconSolid
+  BanknotesIcon as BanknotesIconSolid,
+  UserIcon as UserIconSolid,
+  ClockIcon as ClockIconSolid,
+  CalendarDaysIcon as CalendarDaysIconSolid
 } from '@heroicons/react/24/solid';

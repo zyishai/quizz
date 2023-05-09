@@ -11,11 +11,11 @@ import { redirectCookie } from "~/utils/cookies.server";
 import dayjs from "dayjs";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
-  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'billings.lesson', 'billings.lesson.student'] });
+  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson', 'billings.lesson.student'] });
 }
 
 export const getPaymentAccountById = async (teacherId: string, accountId: string) => {
-  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'billings.lesson', 'billings.lesson.student'] });
+  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson', 'billings.lesson.student'] });
   if (!account) {
     throw new AppError({ errType: ErrorType.AccountNotFound });
   }

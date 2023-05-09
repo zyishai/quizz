@@ -26,7 +26,7 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
 type FetchPaymentAccountProps = {
   teacherId: string;
   accountId: string;
-  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'billings.lesson' | 'billings.lesson.student')[];
+  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student')[];
 }
 export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: FetchPaymentAccountProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
@@ -42,7 +42,7 @@ export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: F
 }
 
 type FetchPaymentAccountsProps = {
-  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'billings.lesson' | 'billings.lesson.student')[];
+  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student')[];
 }
 export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount[]> {
   const db = await getDatabaseInstance();
