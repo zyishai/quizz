@@ -48,6 +48,8 @@ export default function AddLessonModal({
               dayjs().format("YYYY-MM-DD")
           : dayjs().format("YYYY-MM-DD")
       );
+    } else {
+      durationInputRef.current = 60;
     }
   }, [open]);
 
