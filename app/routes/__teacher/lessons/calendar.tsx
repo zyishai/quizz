@@ -14,7 +14,7 @@ import {
 } from "@remix-run/react";
 import { IconCalendarPlus } from "~/utils/icons";
 import dayjs from "dayjs";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { findLessonsInRange, getLesson } from "~/handlers/lessons.server";
@@ -37,6 +37,7 @@ import { getStudents } from "~/handlers/students.server";
 import isMobile from "ismobilejs";
 import { redirectCookie } from "~/utils/cookies.server";
 import LessonInfoModal from "~/components/lesson-info-modal";
+import { DateTimeString } from "~/types/misc";
 
 export const links: LinksFunction = () => {
   return [
@@ -185,8 +186,8 @@ export default function LessonsCalendarView() {
     })[]
   >([]);
   const [editedLessonId, setEditedLessonId] = useState<string | null>(null);
-  const fetcher = useFetcher();
   const [showNewLessonModal, setShowNewLessonModal] = useState(false);
+  const initialDateRef = useRef<DateTimeString | undefined>(undefined);
 
   const events = useMemo(
     () =>
@@ -361,36 +362,46 @@ export default function LessonsCalendarView() {
             };
           }),
         }}
-        onItemMove={(id, x, y, height) => {
-          setLessons((lessons) =>
-            lessons.map((lesson) => {
-              if (lesson.id === id) {
-                return {
-                  ...lesson,
-                  displayDate: dayjs(range.start)
-                    .add(days.length - 1 - x, "days")
-                    .format("DD/MM"),
-                  displayHour: formatTime24FromMinutes(15 * y + 8 * 60),
-                };
-              }
+        // onItemMove={(id, x, y, height) => {
+        //   setLessons((lessons) =>
+        //     lessons.map((lesson) => {
+        //       if (lesson.id === id) {
+        //         return {
+        //           ...lesson,
+        //           displayDate: dayjs(range.start)
+        //             .add(days.length - 1 - x, "days")
+        //             .format("DD/MM"),
+        //           displayHour: formatTime24FromMinutes(15 * y + 8 * 60),
+        //         };
+        //       }
 
-              return lesson;
-            })
-          );
-        }}
-        onItemResize={(id, x, y, height) => {
-          setLessons((lessons) =>
-            lessons.map((lesson) => {
-              if (lesson.id === id) {
-                return {
-                  ...lesson,
-                  displayDuration: formatDuration(height * 15),
-                };
-              }
+        //       return lesson;
+        //     })
+        //   );
+        // }}
+        // onItemResize={(id, x, y, height) => {
+        //   setLessons((lessons) =>
+        //     lessons.map((lesson) => {
+        //       if (lesson.id === id) {
+        //         return {
+        //           ...lesson,
+        //           displayDuration: formatDuration(height * 15),
+        //         };
+        //       }
 
-              return lesson;
-            })
-          );
+        //       return lesson;
+        //     })
+        //   );
+        // }}
+        onClick={(index) => {
+          const col = index % 6;
+          const row = Math.floor(index / 6);
+          const hour = 8 + (row * 30) / 60;
+          initialDateRef.current = dayjs(range.start)
+            .add(days.length - col - 1, "days")
+            .add(hour, "hours")
+            .toISOString();
+          setShowNewLessonModal(true);
         }}
         itemIds={events.map((lesson) => lesson.id)}
         renderItem={(id) => {
@@ -406,30 +417,30 @@ export default function LessonsCalendarView() {
             </>
           ) : null;
         }}
-        onDragStop={(layout, oldItem, newItem, placeholder, event, elem) => {
-          fetcher.submit(
-            {
-              lessonId: newItem.i,
-              dateAndTime: dayjs(range.start)
-                .startOf("week")
-                .day(days.length - newItem.x - 1)
-                .minute(8 * 60 + newItem.y * 15)
-                .toISOString(),
-              _action: "updateLessonPlacement",
-            },
-            { method: "post", action: "/lessons?index" }
-          );
-        }}
-        onResizeStop={(layout, oldItem, newItem, placeholder, event, elem) => {
-          fetcher.submit(
-            {
-              lessonId: newItem.i,
-              duration: (newItem.h * 15).toString(),
-              _action: "updateLessonDuration",
-            },
-            { method: "post", action: "/lessons?index" }
-          );
-        }}
+        // onDragStop={(layout, oldItem, newItem, placeholder, event, elem) => {
+        //   fetcher.submit(
+        //     {
+        //       lessonId: newItem.i,
+        //       dateAndTime: dayjs(range.start)
+        //         .startOf("week")
+        //         .day(days.length - newItem.x - 1)
+        //         .minute(8 * 60 + newItem.y * 15)
+        //         .toISOString(),
+        //       _action: "updateLessonPlacement",
+        //     },
+        //     { method: "post", action: "/lessons?index" }
+        //   );
+        // }}
+        // onResizeStop={(layout, oldItem, newItem, placeholder, event, elem) => {
+        //   fetcher.submit(
+        //     {
+        //       lessonId: newItem.i,
+        //       duration: (newItem.h * 15).toString(),
+        //       _action: "updateLessonDuration",
+        //     },
+        //     { method: "post", action: "/lessons?index" }
+        //   );
+        // }}
       />
 
       <div className="m-1 mt-3 flex sm:hidden">
@@ -461,8 +472,12 @@ export default function LessonsCalendarView() {
       <AddLessonModal
         action="/lessons?index"
         open={showNewLessonModal}
-        onClose={() => setShowNewLessonModal(false)}
+        onClose={() => {
+          setShowNewLessonModal(false);
+          initialDateRef.current = undefined;
+        }}
         students={loaderData.students}
+        initialDate={initialDateRef.current}
       />
       <LessonInfoModal
         open={typeof editedLessonId === "string"}

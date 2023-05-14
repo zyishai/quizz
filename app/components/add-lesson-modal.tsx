@@ -1,26 +1,39 @@
 import { RadioGroup } from "@headlessui/react";
 import { Form, useFetcher } from "@remix-run/react";
 import clsx from "clsx";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Student } from "~/types/student";
 import Dialog from "./dialog";
 import dayjs from "dayjs";
 import { DateTimeString } from "~/types/misc";
 import { durations } from "~/utils/durations";
 
+if (typeof document !== "undefined") {
+  (window as any).dayjs = dayjs;
+}
+
 type AddLessonProps = {
   open: boolean;
   onClose: (date?: string) => void;
   action?: string;
   students: Student[];
+  initialDate?: DateTimeString;
 };
 export default function AddLessonModal({
   open,
   onClose,
   action,
   students,
+  initialDate,
 }: AddLessonProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const [currentDate, setCurrentDate] = useState<DateTimeString | undefined>(
+    initialDate
+      ? initialDate
+      : typeof document !== "undefined"
+      ? localStorage.getItem("lastSelectedDate") || dayjs().toISOString()
+      : dayjs().toISOString()
+  );
   const durationInputRef = useRef<number | null>(null);
   const timeSlotsRef = useRef<DateTimeString[] | Date[] | null>(null);
   const fetcher = useFetcher<Date[]>();
@@ -35,6 +48,12 @@ export default function AddLessonModal({
     );
 
   useEffect(() => {
+    if (currentDate) {
+      localStorage.setItem("lastSelectedDate", currentDate);
+    }
+  }, [currentDate]);
+
+  useEffect(() => {
     if (fetcher.data) {
       timeSlotsRef.current = fetcher.data;
     }
@@ -42,16 +61,24 @@ export default function AddLessonModal({
 
   useEffect(() => {
     if (open) {
+      setCurrentDate(
+        initialDate
+          ? initialDate
+          : typeof document !== "undefined"
+          ? localStorage.getItem("lastSelectedDate") || dayjs().toISOString()
+          : dayjs().toISOString()
+      );
       fetchAvailableSlots(
-        typeof document !== "undefined"
-          ? localStorage.getItem("lastSelectedDate") ||
+        initialDate ||
+          (typeof document !== "undefined"
+            ? localStorage.getItem("lastSelectedDate") ||
               dayjs().format("YYYY-MM-DD")
-          : dayjs().format("YYYY-MM-DD")
+            : dayjs().format("YYYY-MM-DD"))
       );
     } else {
       durationInputRef.current = 60;
     }
-  }, [open]);
+  }, [open, initialDate]);
 
   return (
     <Dialog open={open} onClose={onClose} title="יצירת שיעור">
@@ -85,16 +112,10 @@ export default function AddLessonModal({
                 onClick={() => dateInputRef.current?.showPicker?.()}
                 onChange={(e) => {
                   if (!!e.target.value) {
-                    localStorage.setItem("lastSelectedDate", e.target.value);
-                    fetchAvailableSlots();
+                    setCurrentDate(e.target.value);
                   }
                 }}
-                value={
-                  typeof document !== "undefined"
-                    ? localStorage.getItem("lastSelectedDate") ||
-                      dayjs().format("YYYY-MM-DD")
-                    : dayjs().format("YYYY-MM-DD")
-                }
+                value={dayjs(currentDate).format("YYYY-MM-DD")}
                 required
                 aria-required="true"
               />
@@ -112,6 +133,12 @@ export default function AddLessonModal({
                 id="datetime"
                 key="datetime"
                 className="mt-1 block w-full rounded-md border-gray-300 py-1 shadow-sm focus:border-amber-500 focus:ring-amber-500 disabled:bg-gray-50 sm:py-2 sm:text-sm"
+                value={currentDate}
+                onChange={(e) => {
+                  if (!!e.target.value) {
+                    setCurrentDate(e.target.value);
+                  }
+                }}
                 required
                 aria-required="true"
               >

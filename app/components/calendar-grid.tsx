@@ -18,8 +18,9 @@ type CalendarGridProps = React.PropsWithChildren<{
   layouts: ReactGridLayout.Layouts;
   itemIds: string[];
   renderItem: (id: string) => React.ReactNode;
-  onItemMove: (id: string, x: number, y: number, height: number) => void;
-  onItemResize: (id: string, x: number, y: number, height: number) => void;
+  onClick?: (index: number) => void;
+  onItemMove?: (id: string, x: number, y: number, height: number) => void;
+  onItemResize?: (id: string, x: number, y: number, height: number) => void;
   onDragStart?: ReactGridLayout.ItemCallback;
   onDragStop?: ReactGridLayout.ItemCallback;
   onResizeStop?: ReactGridLayout.ItemCallback;
@@ -35,6 +36,7 @@ export default function CalendarGrid({
   onResizeStop,
   itemIds,
   renderItem,
+  onClick,
   children,
 }: CalendarGridProps) {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
@@ -239,8 +241,28 @@ export default function CalendarGrid({
           ))}
         </div>
 
+        <div
+          className="col-span-1 col-start-1 row-start-3 grid"
+          style={{
+            gridTemplateColumns: `repeat(${days.length}, 1fr)`,
+            gridTemplateRows: `repeat(${
+              4 * times.length
+            }, minmax(${rowHeight}px,_1fr))`,
+          }}
+        >
+          {new Array(days.length * 2 * times.length).fill(0).map((_, index) => (
+            <div
+              key={index}
+              className="cursor-pointer hover:bg-gray-100"
+              onClick={() => {
+                typeof onClick === "function" && onClick(index);
+              }}
+            ></div>
+          ))}
+        </div>
+
         <ResponsiveGridLayout
-          className="relative col-span-1 col-start-1 row-start-3"
+          className="pointer-events-none relative col-span-1 col-start-1 row-start-3"
           layouts={layouts}
           cols={{
             xxs: days.length,
@@ -271,7 +293,8 @@ export default function CalendarGrid({
               }
               setDraggedItemPosition(elem.getBoundingClientRect());
               setDraggedItemInfo(newItem);
-              onItemMove(newItem.i, newItem.x, newItem.y, newItem.h);
+              typeof onItemMove === "function" &&
+                onItemMove(newItem.i, newItem.x, newItem.y, newItem.h);
             },
             150
           )}
@@ -289,7 +312,8 @@ export default function CalendarGrid({
               }
               setResizedItemPosition(elem.getBoundingClientRect());
               setResizedItemInfo(newItem);
-              onItemResize(newItem.i, newItem.x, newItem.y, newItem.h);
+              typeof onItemResize === "function" &&
+                onItemResize(newItem.i, newItem.x, newItem.y, newItem.h);
             },
             150
           )}
@@ -301,7 +325,10 @@ export default function CalendarGrid({
           }}
         >
           {itemIds.map((id) => (
-            <div key={id} className="relative flex flex-col p-1">
+            <div
+              key={id}
+              className="pointer-events-auto relative flex flex-col p-1"
+            >
               {renderItem(id)}
             </div>
           ))}
