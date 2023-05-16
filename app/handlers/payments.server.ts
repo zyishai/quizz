@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { addPaymentToStudentAccount, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, deletePaymentByIdV2, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails, updatePaymentDetailsV2 } from "~/adapters/payment.adapter"
+import { addPaymentToStudentAccount, addStandalonePayment, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, deletePaymentByIdV2, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails, updatePaymentDetailsV2 } from "~/adapters/payment.adapter"
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
 import { CreatePaymentAccountDto, PaymentMethod } from "~/types/payment-account";
@@ -9,13 +9,15 @@ import { getUserId } from "~/utils/session.server";
 import { getLesson } from "./lessons.server";
 import { redirectCookie } from "~/utils/cookies.server";
 import dayjs from "dayjs";
+import { updateLessonDetails } from "~/adapters/lesson.adapter";
+import { deleteLessonById } from "~/adapters/lesson.adapter";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
-  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson', 'billings.lesson.student'] });
+  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson.id'] });
 }
 
 export const getPaymentAccountById = async (teacherId: string, accountId: string) => {
-  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson', 'billings.lesson.student'] });
+  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson.id'] });
   if (!account) {
     throw new AppError({ errType: ErrorType.AccountNotFound });
   }
@@ -86,37 +88,46 @@ export const makePayment = async (request: Request) => {
     const teacher = await getTeacherByUserId(userId);
     if (teacher) {
       const formData = await request.formData();
-      const lessonId = formData.get("lessonId");
-      assertString(lessonId);
+      const lessonId = formData.get("lessonId")?.toString();
       const sum = Number(formData.get('sum'));
       assertNumber(sum);
       const paymentMethod = formData.get('paymentMethod');
       assertPaymentMethod(paymentMethod);
       
-      const account = await addPaymentToStudentAccount(lessonId, { sum, paymentMethod });
-      if (!account) {
-        throw new AppError({ errType: ErrorType.PaymentFailed });
-      }
+      if (lessonId) {
+        const account = await addPaymentToStudentAccount(lessonId, { sum, paymentMethod });
+        if (!account) {
+          throw new AppError({ errType: ErrorType.PaymentFailed });
+        }
 
-      const lesson = await getLesson(teacher.id, lessonId);
-      const redirectToCookie = await redirectCookie.getSession(
-        request.headers.get("Cookie")
-      );
-      if (hasEventFetched(lesson)) {
-        const rangeStart = dayjs(lesson.event.dateAndTime).startOf("week").toISOString();
-        const rangeEnd = dayjs(lesson.event.dateAndTime).endOf("week").toISOString();
-        redirectToCookie.set(
-          "redirectTo",
-          `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+        const lesson = await getLesson(teacher.id, lessonId);
+        const redirectToCookie = await redirectCookie.getSession(
+          request.headers.get("Cookie")
         );
+        if (hasEventFetched(lesson)) {
+          const rangeStart = dayjs(lesson.event.dateAndTime).startOf("week").toISOString();
+          const rangeEnd = dayjs(lesson.event.dateAndTime).endOf("week").toISOString();
+          redirectToCookie.set(
+            "redirectTo",
+            `/lessons/calendar?rangeStart=${rangeStart}&rangeEnd=${rangeEnd}`
+          );
+        }
+        return json({ account }, {
+          headers: {
+            "Set-Cookie": await redirectCookie.commitSession(
+              redirectToCookie
+            ),
+          },
+        });
+      } else {
+        const accountId = formData.get('accountId');
+        assertString(accountId);
+        const account = await addStandalonePayment({ accountId, sum, paymentMethod });
+        if (!account) {
+          throw new AppError({ errType: ErrorType.PaymentFailed });
+        }
+        return json({ account });
       }
-      return json({ account }, {
-        headers: {
-          "Set-Cookie": await redirectCookie.commitSession(
-            redirectToCookie
-          ),
-        },
-      });
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
@@ -124,7 +135,7 @@ export const makePayment = async (request: Request) => {
     throw new AppError({ errType: ErrorType.UserNotFound });
   }
 }
-export const updatePayment = async (request: Request) => {
+export const updateTransaction = async (request: Request) => {
   const userId = await getUserId(request);
   if (userId) {
     const teacher = await getTeacherByUserId(userId);
@@ -132,16 +143,58 @@ export const updatePayment = async (request: Request) => {
       const formData = await request.formData();
       const transactionId = formData.get("transactionId");
       assertString(transactionId);
-      const sum = Number(formData.get('sum'));
-      assertNumber(sum);
+      const paymentId = formData.get('paymentId')?.toString();
+      const billingId = formData.get('billingId')?.toString();
+      const credit = Number(formData.get('credit'));
+      assertNumber(credit);
+      const debit = Number(formData.get('debit'));
+      assertNumber(debit);
       const paymentMethod = formData.get('paymentMethod');
       assertPaymentMethod(paymentMethod);
       
-      const account = await updatePaymentDetailsV2(transactionId, { sum, paymentMethod });
-      if (!account) {
-        throw new AppError({ errType: ErrorType.PaymentUpdateFailed });
+      if (paymentId) {
+        const account = await updatePaymentDetailsV2(paymentId, { sum: credit, paymentMethod });
+        if (!account) {
+          throw new AppError({ errType: ErrorType.PaymentUpdateFailed });
+        }
+      } else if (billingId) {
+        const account = await addPaymentToStudentAccount(billingId, {
+          paymentMethod,
+          sum: credit
+        });
+        if (!account) {
+          throw new AppError({ errType: ErrorType.AccountNotCreated });
+        }
+      }
+
+      if (billingId) {
+        const lesson = await updateLessonDetails({ lessonId: billingId, price: debit });
+        if (!lesson) {
+          throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+        }
       }
       
+      return json({});
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
+    }
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
+  }
+};
+export const deleteCredit = async (request: Request) => {
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const formData = await request.formData();
+      const paymentId = formData.get('paymentId');
+      assertString(paymentId);
+      const account = await deletePaymentByIdV2(paymentId);
+      if (!account) {
+        throw new AppError({ errType: ErrorType.PaymentDeleteFailed });
+      }
+
       return json({ account });
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
@@ -150,6 +203,58 @@ export const updatePayment = async (request: Request) => {
     throw new AppError({ errType: ErrorType.UserNotFound });
   }
 };
+export const deleteDebit = async (request: Request) => {
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const formData = await request.formData();
+      const lessonId = formData.get('lessonId');
+      assertString(lessonId);
+      const lesson = await deleteLessonById(lessonId);
+      if (!lesson) {
+        throw new AppError({ errType: ErrorType.LessonDeleteFailed });
+      }
+
+      return json({ lesson });
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
+    }
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
+  }
+};
+export const deleteTransaction = async (request: Request) => {
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const formData = await request.formData();
+
+      const paymentId = formData.get('paymentId');
+      assertString(paymentId);
+      const lessonId = formData.get('lessonId');
+      assertString(lessonId);
+
+      const account = await deletePaymentByIdV2(paymentId);
+      if (!account) {
+        throw new AppError({ errType: ErrorType.PaymentDeleteFailed });
+      }
+
+      const lesson = await deleteLessonById(lessonId);
+      if (!lesson) {
+        throw new AppError({ errType: ErrorType.LessonDeleteFailed });
+      }
+
+      return json({ lesson, account });
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
+    }
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
+  }
+};
+
 export const deletePayment = async (request: Request) => {
   const userId = await getUserId(request);
   if (userId) {

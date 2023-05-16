@@ -16,6 +16,7 @@ export type Billing = {
   lesson?: Lesson | null | undefined;
   sum: number;
   date: DateTimeString;
+  createdAt: DateTimeString;
 }
 
 export type Payment = {
@@ -24,8 +25,8 @@ export type Payment = {
   sum: number;
   method: PaymentMethod;
   lesson?: Lesson | null | undefined;
-  student: string | Student;
-  contact: string | Contact;
+  student?: string | Student;
+  contact?: string | Contact;
   paidAt: DateTimeString;
 }
 
@@ -53,6 +54,8 @@ export type DebitTransaction = {
 
 export type Transaction = {
   id: string;
+  billingId?: string;
+  paymentId?: string;
   method?: PaymentMethod;
   date: DateTimeString;
   debit?: number;

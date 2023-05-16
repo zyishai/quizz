@@ -6,43 +6,23 @@ import { getUserId } from "~/utils/session.server";
 import {
   deletePayment,
   getPaymentAccountsList,
-  updatePayment,
+  updateTransaction,
 } from "~/handlers/payments.server";
-import { Form, Link, useLoaderData } from "@remix-run/react";
-import {
-  hasStudentFetched,
-  haveContactsFetched,
-  haveStudentsFetched,
-  isCreditTransaction,
-  isDebitTransaction,
-} from "~/utils/misc";
+import { Link, useLoaderData } from "@remix-run/react";
+import { haveContactsFetched, haveStudentsFetched } from "~/utils/misc";
 import { namedAction } from "remix-utils";
 import {
   BanknotesIconSolid,
   ChevronLeftIconSolid,
-  IconBrandPaypal,
-  IconCalendarEvent,
-  IconCoins,
-  IconCreditCard,
   IconCurrencyShekel,
-  IconPlus,
 } from "~/utils/icons";
 import clsx from "clsx";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import WarningAlert from "~/components/WarningAlert";
-import {
-  Billing,
-  Payment,
-  PaymentMethod,
-  TransactionType,
-} from "~/types/payment-account";
-import dayjs from "dayjs";
-import { formatPaymentMethod } from "~/utils/format";
-import EditTransactionModal from "~/components/edit-transaction-modal";
 
 export const action = async ({ request }: ActionArgs) => {
   return namedAction(request, {
-    updatePayment: () => updatePayment(request),
+    updatePayment: () => updateTransaction(request),
     deletePayment: () => deletePayment(request),
   });
   // const formData = await request.formData();
@@ -77,7 +57,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
 export default function PaymentAccountsListPage() {
   const { accounts } = useLoaderData<typeof loader>();
-  const [editedPaymentId, setEditedPaymentId] = useState<string | null>(null);
+  // const [editedPaymentId, setEditedPaymentId] = useState<string | null>(null);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
 
   return (
@@ -94,7 +74,7 @@ export default function PaymentAccountsListPage() {
             כרטיסיות תשלום
           </h3>
 
-          <div className="sm:mt-0 sm:ltr:ml-4 sm:rtl:mr-4">
+          {/* <div className="sm:mt-0 sm:ltr:ml-4 sm:rtl:mr-4">
             <Link
               to="new"
               className="inline-flex items-center justify-center rounded-md border border-transparent bg-amber-500 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
@@ -102,14 +82,13 @@ export default function PaymentAccountsListPage() {
               <IconPlus className="h-4 w-4 ltr:mr-1 rtl:ml-1" />
               <span>כרטיסיה חדשה</span>
             </Link>
-          </div>
+          </div> */}
         </section>
 
         {accounts.length > 0 ? (
           <>
             <ul role="list" className="divide-y divide-gray-100 px-4 sm:hidden">
               {accounts
-                .slice(0, showAllAccounts ? -1 : 4)
                 .filter(
                   (account) =>
                     haveStudentsFetched(account) && haveContactsFetched(account)
@@ -143,7 +122,7 @@ export default function PaymentAccountsListPage() {
                     </Link>
                   </li>
                 ))}
-              {!showAllAccounts ? (
+              {/* {!showAllAccounts ? (
                 <li className="flex">
                   <button
                     type="button"
@@ -163,13 +142,13 @@ export default function PaymentAccountsListPage() {
                     <span>הצג פחות</span>
                   </button>
                 </li>
-              )}
+              )} */}
             </ul>
             <ul
               role="list"
               className="hidden grid-cols-4 gap-x-6 gap-y-8 sm:grid xl:gap-x-8"
             >
-              {accounts.slice(0, showAllAccounts ? -1 : 3).map((account) => {
+              {accounts.map((account) => {
                 const balance =
                   account.billings.reduce(
                     (sum, billing) => sum + billing.sum,
@@ -225,7 +204,7 @@ export default function PaymentAccountsListPage() {
                   </li>
                 );
               })}
-              {!showAllAccounts && (
+              {/* {!showAllAccounts && (
                 <li className="flex rounded-xl">
                   <button
                     type="button"
@@ -235,7 +214,7 @@ export default function PaymentAccountsListPage() {
                     <span>הצג הכל</span>
                   </button>
                 </li>
-              )}
+              )} */}
             </ul>
           </>
         ) : (
@@ -244,7 +223,7 @@ export default function PaymentAccountsListPage() {
           </WarningAlert>
         )}
 
-        <h2 className="mt-11 text-lg font-semibold leading-6 text-gray-900">
+        {/* <h2 className="mt-11 text-lg font-semibold leading-6 text-gray-900">
           תנועות אחרונות בכל הכרטיסיות
         </h2>
         <div
@@ -302,10 +281,6 @@ export default function PaymentAccountsListPage() {
                               ) : (
                                 <IconCalendarEvent />
                               )}
-                              {/* <transaction.icon
-                                className="hidden h-6 w-5 flex-none text-gray-400 sm:block"
-                                aria-hidden="true"
-                              /> */}
                               <div className="flex-auto">
                                 <div className="flex items-center gap-x-0.5 text-sm font-medium leading-6 text-gray-900">
                                   <span dir="ltr">
@@ -396,9 +371,6 @@ export default function PaymentAccountsListPage() {
                                 />
                               </div>
                             )}
-                            {/* <div className="mt-1 text-xs leading-5 text-gray-500">
-                              Invoice <span className="text-gray-900">#{transaction.invoiceNumber}</span>
-                            </div> */}
                           </td>
                         </tr>
                       </Fragment>
@@ -407,7 +379,7 @@ export default function PaymentAccountsListPage() {
               </table>
             </div>
           </div>
-        </div>
+        </div> */}
       </main>
     </>
   );

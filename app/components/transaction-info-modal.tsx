@@ -1,22 +1,23 @@
 import Dialog from "./dialog";
-import type { Payment, PaymentAccount } from "~/types/payment-account";
+import type { Transaction } from "~/types/payment-account";
 import EditTransactionModal from "./edit-transaction-modal";
 import { useState } from "react";
 import { Form } from "@remix-run/react";
+import DeleteTransactionModal from "./delete-transaction-modal";
 
 type TransactionInfoProps = {
   open: boolean;
   onClose: () => void;
-  account: PaymentAccount;
-  transaction?: Payment;
+  transaction?: Transaction;
 };
 export default function TransactionInfoModal({
   open,
   onClose,
-  account,
   transaction,
 }: TransactionInfoProps) {
   const [showEditTransactionModal, setShowEditTransactionModal] =
+    useState(false);
+  const [showDeleteTransactionModal, setShowDeleteTransactionModal] =
     useState(false);
 
   return (
@@ -30,33 +31,55 @@ export default function TransactionInfoModal({
               onClick={() => setShowEditTransactionModal(true)}
               autoFocus
             >
-              ערוך פרטי תשלום
+              ערוך
             </button>
-            <Form method="post" className="mt-3">
-              <input type="hidden" name="_action" value="deleteTransaction" />
-              <input type="hidden" name="accountId" value={account.id} />
+            <Form method="post" className="mt-3" onSubmit={onClose}>
               <input
                 type="hidden"
-                name="transactionId"
-                value={transaction?.id}
+                name="paymentId"
+                value={transaction?.paymentId}
+              />
+              <input
+                type="hidden"
+                name="lessonId"
+                value={transaction?.billingId}
               />
               <button
                 type="submit"
                 className="inline-flex w-full justify-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 shadow-sm hover:bg-amber-200 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
                 onClick={(e) => {
-                  if (
-                    !confirm(
-                      `האם ברצונך למחוק תשלום ע״ס ${transaction?.sum} ש״ח?`
-                    )
-                  ) {
+                  if (!transaction?.paymentId || !transaction.billingId) {
+                    if (
+                      transaction?.paymentId &&
+                      !confirm(
+                        `האם ברצונך למחוק תשלום ע״ס ${transaction?.credit} ש״ח?`
+                      )
+                    ) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }
+                    if (
+                      transaction?.billingId &&
+                      !confirm(
+                        `האם ברצונך למחוק חיוב ע״ס ${transaction.debit} ש״ח? פעולה זו תמחק את השיעור.`
+                      )
+                    ) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }
+                  } else {
                     e.preventDefault();
                     e.stopPropagation();
+                    setShowDeleteTransactionModal(true);
                     return false;
                   }
-                  onClose();
                 }}
+                name="_action"
+                value={transaction?.paymentId ? "deleteCredit" : "deleteDebit"}
               >
-                מחק תשלום
+                מחק
               </button>
             </Form>
             <button
@@ -71,6 +94,14 @@ export default function TransactionInfoModal({
             open={showEditTransactionModal}
             onClose={() => {
               setShowEditTransactionModal(false);
+              onClose();
+            }}
+            transaction={transaction}
+          />
+          <DeleteTransactionModal
+            open={showDeleteTransactionModal}
+            onClose={() => {
+              setShowDeleteTransactionModal(false);
               onClose();
             }}
             transaction={transaction}

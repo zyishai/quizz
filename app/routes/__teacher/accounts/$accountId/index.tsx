@@ -5,12 +5,16 @@ import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
+import AddDetachedPaymentModal from "~/components/add-detached-payment-modal";
+import TransactionInfoModal from "~/components/transaction-info-modal";
 import {
-  addPaymentToAccount,
-  deleteCreditPayment,
-  editCreditPaymentDetails,
-  getPaymentAccountById,
+  deleteCredit,
+  deleteDebit,
+  deleteTransaction,
+  makePayment,
+  updateTransaction,
 } from "~/handlers/payments.server";
+import { getPaymentAccountById } from "~/handlers/payments.server";
 import { ErrorType } from "~/types/errors";
 import {
   PaymentAccount,
@@ -27,90 +31,18 @@ import {
   IconCoins,
   IconCreditCard,
   IconCurrencyShekel,
+  IconPlus,
 } from "~/utils/icons";
-import { assertNumber, assertPaymentMethod, assertString } from "~/utils/misc";
+import { haveStudentsFetched } from "~/utils/misc";
 import { getUserId } from "~/utils/session.server";
 
-export const action = async ({ request, params }: ActionArgs) => {
+export const action = async ({ request }: ActionArgs) => {
   return namedAction(request, {
-    async makePayment() {
-      const formData = await request.formData();
-
-      const accountId = formData.get("accountId")?.toString();
-      assertString(accountId);
-      const sum = Number(formData.get("sum"));
-      assertNumber(sum);
-      const method = formData.get("method")?.toString();
-      assertPaymentMethod(method);
-      const studentId = formData.get("studentId")?.toString();
-      assertString(studentId);
-
-      // console.log(Object.fromEntries(Array.from(formData)));
-      const account = await addPaymentToAccount(accountId, {
-        sum,
-        method,
-        studentId,
-      });
-
-      if (!account) {
-        throw new AppError({ errType: ErrorType.PaymentFailed });
-      }
-
-      return json({ account });
-    },
-    async editTransaction() {
-      const userId = await getUserId(request);
-      if (userId) {
-        const teacher = await getTeacherByUserId(userId);
-        if (teacher) {
-          const formData = await request.formData();
-          const { accountId } = params;
-          assertString(accountId);
-          const sum = formData.get("sum");
-          const method = formData.get("method")?.toString() as
-            | PaymentMethod
-            | undefined;
-          const studentId = formData.get("studentId")?.toString();
-          const transactionId = formData.get("transactionId");
-          assertString(transactionId);
-
-          const account = await editCreditPaymentDetails(
-            accountId,
-            transactionId,
-            {
-              teacherId: teacher.id,
-              sum: sum ? Number(sum) : undefined,
-              method,
-              studentId,
-            }
-          );
-          if (!account) {
-            throw new AppError({ errType: ErrorType.PaymentUpdateFailed });
-          }
-
-          console.log(account);
-          return json({ account });
-        } else {
-          throw new AppError({ errType: ErrorType.TeacherNotFound });
-        }
-      } else {
-        throw new AppError({ errType: ErrorType.UserNotFound });
-      }
-    },
-    async deleteTransaction() {
-      const formData = await request.formData();
-      const accountId = formData.get("accountId")?.toString();
-      assertString(accountId);
-      const transactionId = formData.get("transactionId")?.toString();
-      assertString(transactionId);
-
-      const account = await deleteCreditPayment(accountId, transactionId);
-      if (!account) {
-        throw new AppError({ errType: ErrorType.PaymentDeleteFailed });
-      }
-
-      return json({ account });
-    },
+    makePayment: () => makePayment(request),
+    updateTransaction: () => updateTransaction(request),
+    deleteCredit: () => deleteCredit(request),
+    deleteDebit: () => deleteDebit(request),
+    deleteTransaction: () => deleteTransaction(request),
   });
 };
 
@@ -151,28 +83,36 @@ export default function PaymentAccountInfoPage() {
       ),
     [transactions]
   );
-  // const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
+  const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
   // const [editTransactionModalTransactionIndex, setShowEditTransactionModal] =
   //   useState<number | null>(null);
-  // const [transactionInfoModalTransactionIndex, setShowTransactionInfoModal] =
-  //   useState<number | null>(null);
+  const [transactionInfoModalTransactionIndex, setShowTransactionInfoModal] =
+    useState<number | null>(null);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
   return (
     <>
-      <div className="border-b border-gray-200 pb-3">
+      <div>
         <Link
           to={"/accounts" || searchParams.get("returnTo") || "/students"}
           className="inline-flex items-center gap-x-1 text-gray-400"
         >
-          <ArrowRightIconSolid className="h-4 w-auto" />
-          <span className="text-sm font-medium">פרטי כרטיסיה</span>
+          <ArrowRightIconSolid className="h-3.5 w-auto" />
+          <span className="text-xs font-medium">כל הכרטיסיות</span>
         </Link>
       </div>
 
-      <main className="flex-1 overflow-auto">
-        <section className="flex border-b border-gray-200 py-6">
+      {haveStudentsFetched(account) && (
+        <header className="mt-2">
+          <h1 className="text-lg font-semibold text-gray-800">
+            {account.students.map((student) => student.fullName).join(", ")}
+          </h1>
+        </header>
+      )}
+
+      <main className="mt-3 flex-1 overflow-auto">
+        <section className="flex border-b border-t border-gray-200 py-6">
           <div className="grid h-10 w-10 flex-none place-content-center rounded-lg border border-gray-300 bg-white shadow-sm ltr:mr-3 rtl:ml-3">
             <BanknotesIconSolid
               className={clsx([
@@ -199,77 +139,104 @@ export default function PaymentAccountInfoPage() {
               יתרה נוכחית
             </dt>
           </div>
-          <button type="button" className="self-center text-sm text-red-400">
+          {/* <button type="button" className="self-center text-sm text-red-400">
             אפס כרטיסיה
-          </button>
+          </button> */}
         </section>
 
-        <h1 className="mt-5 text-base font-semibold text-gray-600">
-          תנועות בכרטיסיה
-        </h1>
-        <ul className="mt-2 divide-y divide-gray-100">
-          {transactions.map((tx, index) => {
-            const currentBalance =
-              balance -
-              transactions
-                .slice(0, index)
-                .reduce(
-                  (sum, tx) => sum + (tx.credit || 0) + (tx.debit || 0),
-                  0
-                );
-            return (
-              <li key={tx.id} className="flex items-start gap-x-3 py-3">
-                {tx.method === PaymentMethod.PAYPAL ? (
-                  <IconBrandPaypal className="text-gray-400" />
-                ) : tx.method === PaymentMethod.CREDIT_CARD ? (
-                  <IconCreditCard className="text-gray-400" />
-                ) : tx.method === PaymentMethod.CASH ? (
-                  <IconCoins className="text-gray-400" />
-                ) : tx.method === PaymentMethod.BIT ? (
-                  <IconCurrencyShekel className="text-gray-400" />
-                ) : (
-                  <IconCalendarEvent className="text-gray-400" />
-                )}
-                <div className="flex-1">
-                  <div className="flex flex-shrink-0 items-start gap-x-1">
-                    {tx.debit && (
-                      <span className="text-base font-medium tabular-nums leading-none text-red-400">
-                        חובה: {Math.abs(tx.debit)}
-                      </span>
+        <div className="mt-5 flex items-center justify-between">
+          <h1 className="text-base font-semibold text-gray-600">
+            תנועות בכרטיסיה
+          </h1>
+
+          <button
+            type="button"
+            className="flex items-center gap-x-1 rounded bg-indigo-500 px-2 py-1.5 text-white"
+            onClick={() => {
+              setShowMakePaymentModal(true);
+            }}
+          >
+            <IconPlus className="h-3 w-auto" />
+            <span className="text-xs leading-none">הוסף תשלום</span>
+          </button>
+        </div>
+
+        <ul className="mt-3 divide-y divide-gray-100">
+          {transactions
+            .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+            .map((tx, index) => {
+              const currentBalance =
+                balance -
+                transactions
+                  .slice(0, index)
+                  .reduce(
+                    (sum, tx) => sum + (tx.credit || 0) + (tx.debit || 0),
+                    0
+                  );
+              return (
+                <li key={tx.id}>
+                  <button
+                    type="button"
+                    className="flex w-full items-start gap-x-3 py-3 text-start"
+                    onClick={() => setShowTransactionInfoModal(index)}
+                  >
+                    {tx.method === PaymentMethod.PAYPAL ? (
+                      <IconBrandPaypal className="text-gray-400" />
+                    ) : tx.method === PaymentMethod.CREDIT_CARD ? (
+                      <IconCreditCard className="text-gray-400" />
+                    ) : tx.method === PaymentMethod.CASH ? (
+                      <IconCoins className="text-gray-400" />
+                    ) : tx.method === PaymentMethod.BIT ? (
+                      <IconCurrencyShekel className="text-gray-400" />
+                    ) : (
+                      <IconCalendarEvent className="text-gray-400" />
                     )}
-                    {tx.debit && tx.credit ? (
-                      <span className="self-center text-xs leading-none text-gray-500">
-                        /
+                    <div className="flex-1">
+                      <div className="flex flex-shrink-0 items-start gap-x-1">
+                        {tx.debit && (
+                          <span className="text-lg font-medium tabular-nums leading-none text-red-400">
+                            חובה: {Math.abs(tx.debit)}
+                          </span>
+                        )}
+                        {tx.debit && tx.credit ? (
+                          <span className="self-center text-xs leading-none text-gray-500">
+                            /
+                          </span>
+                        ) : null}
+                        {tx.credit && (
+                          <span className="text-lg font-medium tabular-nums leading-none text-green-600">
+                            זכות: {Math.abs(tx.credit || 0)}{" "}
+                            <span className="text-xs text-gray-500">
+                              {tx.method
+                                ? `(${formatPaymentMethod(tx.method)})`
+                                : null}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {dayjs(tx.date).format("DD MMM YYYY")}
                       </span>
-                    ) : null}
-                    {tx.credit && (
-                      <span className="text-base font-medium tabular-nums leading-none text-green-600">
-                        זכות: {Math.abs(tx.credit || 0)}{" "}
-                        <span className="text-xs text-gray-500">
-                          {tx.method
-                            ? `(${formatPaymentMethod(tx.method)})`
-                            : null}
+                    </div>
+                    <div className="flex flex-shrink-0 flex-col items-stretch">
+                      <div className="mb-1.5 flex items-end gap-x-0.5">
+                        <span
+                          dir="ltr"
+                          className="text-lg font-medium tabular-nums leading-none text-gray-500"
+                        >
+                          {currentBalance}
                         </span>
+                        <IconCurrencyShekel
+                          className="text-gray-500"
+                          size={15}
+                        />
+                      </div>
+                      <span className="rounded-full bg-amber-100 text-center text-xs text-amber-500">
+                        יתרה
                       </span>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-400">
-                    {dayjs(tx.date).format("DD MMM YYYY")}{" "}
-                  </span>
-                </div>
-                <div className="flex flex-shrink-0 flex-col items-center">
-                  <div className="mb-1.5 flex items-end gap-x-0.5">
-                    <span
-                      dir="ltr"
-                      className="text-base font-medium tabular-nums leading-none text-gray-500"
-                    >
-                      {currentBalance}
-                    </span>
-                    <IconCurrencyShekel className="text-gray-500" size={15} />
-                  </div>
-                  <span className="text-xs text-gray-400">יתרה</span>
-                </div>
-                {/* <div className="flex items-center gap-x-2">
+                    </div>
+                  </button>
+                  {/* <div className="flex items-center gap-x-2">
                   <strong className="text-sm text-gray-500">חובה:</strong>
                   <span dir="ltr" className="tabular-nums">
                     {tx.debit || 0}
@@ -287,7 +254,7 @@ export default function PaymentAccountInfoPage() {
                     {currentBalance > 0 ? `+${currentBalance}` : currentBalance}
                   </span>
                 </div> */}
-                {/* <div className="flex flex-1 gap-x-6">
+                  {/* <div className="flex flex-1 gap-x-6">
                   {isCreditTransaction(tx) ? (
                     tx.method === PaymentMethod.PAYPAL ? (
                       <IconBrandPaypal className="text-gray-500" />
@@ -363,11 +330,26 @@ export default function PaymentAccountInfoPage() {
                     </div>
                   )}
                 </div> */}
-              </li>
-            );
-          })}
+                </li>
+              );
+            })}
         </ul>
       </main>
+
+      <TransactionInfoModal
+        open={typeof transactionInfoModalTransactionIndex === "number"}
+        onClose={() => setShowTransactionInfoModal(null)}
+        transaction={
+          typeof transactionInfoModalTransactionIndex === "number"
+            ? transactions[transactionInfoModalTransactionIndex]
+            : undefined
+        }
+      />
+      <AddDetachedPaymentModal
+        open={showMakePaymentModal}
+        onClose={() => setShowMakePaymentModal(false)}
+        account={account}
+      />
     </>
   );
 }
@@ -381,8 +363,10 @@ function generateTransactionsHistory(account: PaymentAccount): Transaction[] {
     );
     return {
       id: billing.id,
+      billingId: billing.id,
+      paymentId: payment?.id,
       method: payment?.method,
-      date: billing.date,
+      date: billing.createdAt,
       debit: billing.sum,
       credit: payment?.sum,
     };
@@ -393,6 +377,7 @@ function generateTransactionsHistory(account: PaymentAccount): Transaction[] {
       .filter((payment) => !payment.lesson)
       .map((payment) => ({
         id: payment.id,
+        paymentId: payment.id,
         method: payment.method,
         date: payment.paidAt,
         debit: undefined,

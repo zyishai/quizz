@@ -26,11 +26,11 @@ export async function createPaymentAccount(dto: CreatePaymentAccountDto): Promis
 type FetchPaymentAccountProps = {
   teacherId: string;
   accountId: string;
-  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student')[];
+  fetch?: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student' | 'billings.lesson.id')[];
 }
 export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: FetchPaymentAccountProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
-  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from $accountId where teacher == $teacherId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime, createdAt: createdAt} from lesson where $parent.students contains student) as billings from $accountId where teacher == $teacherId';
   if (fetch) {
     query += ` fetch ${fetch.join(', ')}`;
   }
@@ -42,12 +42,12 @@ export async function fetchPaymentAccountById({ teacherId, accountId, fetch }: F
 }
 
 type FetchPaymentAccountsProps = {
-  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student')[];
+  fetch: ('students' | 'contacts' | 'teacher' | 'payments.student' | 'payments.contact' | 'payments.lesson' | 'billings.lesson' | 'billings.lesson.student' | 'billings.lesson.id')[];
 }
 export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount[]> {
   const db = await getDatabaseInstance();
 
-  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from paymentAccount where teacher == $teacherId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime, createdAt: createdAt} from lesson where $parent.students contains student) as billings from paymentAccount where teacher == $teacherId';
   if (props?.fetch) {
     query += ` fetch ${props.fetch.join(', ')}`;
   };
@@ -62,7 +62,7 @@ export async function fetchPaymentAccountsByTeacherId(teacherId: string, props?:
 export async function fetchPaymentAccountByStudentId(studentId: string, props?: FetchPaymentAccountsProps): Promise<PaymentAccount | null> {
   const db = await getDatabaseInstance();
 
-  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime} from lesson where $parent.students contains student) as billings from paymentAccount where students contains $studentId';
+  let query = 'select *, (select {type: "DEBIT", id: id, lesson: id, sum: 0 - price, date: event.dateAndTime, createdAt: createdAt} from lesson where $parent.students contains student) as billings from paymentAccount where students contains $studentId';
   if (props?.fetch) {
     query += ` fetch ${props.fetch.join(', ')}`;
   };
@@ -264,6 +264,28 @@ export async function addPaymentToStudentAccount(lessonId: string, props: AddPay
     lesson: $lessonId,
     paidAt: time::now()
   } where students contains $lessonId.student`, { lessonId, creditType: TransactionType.CREDIT, sum, paymentMethod });
+
+  if (account.error) {
+    throw account.error;
+  }
+
+  return account.result.length > 0 ? account.result[0] : null;
+}
+
+type AddStandalonePaymentProps = {
+  accountId: string;
+  sum: number;
+  paymentMethod: PaymentMethod;
+}
+export async function addStandalonePayment({ accountId, sum, paymentMethod }: AddStandalonePaymentProps): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+  const [account] = await db.query<Result<PaymentAccount[]>[]>(`update $accountId set payments += {
+    id: rand::uuid(),
+    type: $creditType,
+    sum: $sum,
+    method: $paymentMethod,
+    paidAt: time::now()
+  }`, { accountId, creditType: TransactionType.CREDIT, sum, paymentMethod });
 
   if (account.error) {
     throw account.error;

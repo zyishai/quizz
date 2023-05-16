@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { Payment } from "~/types/payment-account";
+import { Transaction } from "~/types/payment-account";
 import Dialog from "./dialog";
 import { IconCurrencyShekel } from "~/utils/icons";
 import { paymentMethods } from "~/utils/payment-methods";
@@ -8,7 +8,7 @@ type EditTransactionProps = {
   open: boolean;
   onClose: () => void;
   action?: string;
-  transaction?: Payment;
+  transaction?: Transaction;
 };
 export default function EditTransactionModal({
   open,
@@ -17,9 +17,9 @@ export default function EditTransactionModal({
   transaction,
 }: EditTransactionProps) {
   return (
-    <Dialog open={open} onClose={onClose} title="ערוך תשלום">
+    <Dialog open={open} onClose={onClose} title="ערוך פרטי טרנזקציה">
       <Dialog.Body>
-        <p className="text-sm text-gray-500">ערוך תשלום עבור החשבון</p>
+        {/* <p className="text-sm text-gray-500">ערוך תשלום עבור החשבון</p> */}
 
         <Form
           method="post"
@@ -28,25 +28,62 @@ export default function EditTransactionModal({
           id="edit-transaction-form"
           onSubmit={onClose}
         >
-          <input type="hidden" name="_action" value="updatePayment" />
+          <input type="hidden" name="_action" value="updateTransaction" />
           <input type="hidden" name="transactionId" value={transaction?.id} />
+          <input
+            type="hidden"
+            name="paymentId"
+            value={transaction?.paymentId}
+          />
+          <input
+            type="hidden"
+            name="billingId"
+            value={transaction?.billingId}
+          />
 
-          <div className="flex space-x-2 rtl:space-x-reverse">
+          {transaction?.billingId && (
             <div className="flex-1">
               <label
-                htmlFor="sum"
+                htmlFor="debit"
                 className="block text-sm font-semibold text-gray-500"
               >
-                סכום
+                חובה
               </label>
               <div className="group relative mt-1 rounded-md shadow-sm">
                 <input
                   type="number"
-                  name="sum"
-                  id="sum"
+                  name="debit"
+                  id="debit"
                   inputMode="numeric"
                   className="block w-full rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:py-2.5 sm:text-sm"
-                  defaultValue={transaction?.sum}
+                  defaultValue={Math.abs(transaction?.debit || 0)}
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <IconCurrencyShekel
+                    className="h-5 w-5 text-gray-400 group-focus-within:text-amber-500"
+                    aria-hidden="true"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-5 flex space-x-2 rtl:space-x-reverse">
+            <div className="flex-1">
+              <label
+                htmlFor="credit"
+                className="block text-sm font-semibold text-gray-500"
+              >
+                זכות
+              </label>
+              <div className="group relative mt-1 rounded-md shadow-sm">
+                <input
+                  type="number"
+                  name="credit"
+                  id="credit"
+                  inputMode="numeric"
+                  className="block w-full rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:py-2.5 sm:text-sm"
+                  defaultValue={transaction?.credit || 0}
                 />
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                   <IconCurrencyShekel
