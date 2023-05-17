@@ -1,16 +1,12 @@
 import { RadioGroup } from "@headlessui/react";
 import { Form, useFetcher } from "@remix-run/react";
 import clsx from "clsx";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Student } from "~/types/student";
 import Dialog from "./dialog";
 import dayjs from "dayjs";
 import { DateTimeString } from "~/types/misc";
 import { durations } from "~/utils/durations";
-
-if (typeof document !== "undefined") {
-  (window as any).dayjs = dayjs;
-}
 
 type AddLessonProps = {
   open: boolean;
@@ -146,7 +142,7 @@ export default function AddLessonModal({
                   ?.map((slot) => (
                     <option
                       key={dayjs(slot).tz("utc").format("HH:mm")}
-                      value={dayjs.tz(slot, "Israel").toISOString()}
+                      value={dayjs(slot).toISOString()}
                     >
                       {dayjs(slot).tz("utc").format("HH:mm")}
                     </option>
