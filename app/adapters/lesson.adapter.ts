@@ -71,11 +71,13 @@ export async function createLesson(dto: CreateLessonDto): Promise<Lesson | null>
     topic: $topic,
     notes: '',
     price: $price,
+    paid: <future> { math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) },
     address: '',
     summary: '',
-    ended: <future> { math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) >= $price * $eventId.duration / 60 },
+    ended: false,
     createdAt: time::now()
   }`, dto);
+  // ended: <future> { math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) >= $price * $eventId.duration / 60 },
   if (lesson.error) {
     throw lesson.error;
   }

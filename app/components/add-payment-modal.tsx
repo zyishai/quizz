@@ -3,6 +3,7 @@ import Dialog from "./dialog";
 import { Lesson } from "~/types/lesson";
 import { hasEventFetched, hasStudentFetched } from "~/utils/misc";
 import { paymentMethods } from "~/utils/payment-methods";
+import InfoAlert from "./InfoAlert";
 
 type AddPaymentProps = {
   open: boolean;
@@ -34,13 +35,22 @@ export default function AddPaymentModal({
             <input type="hidden" name="_action" value="makePayment" />
             <input type="hidden" name="lessonId" value={lesson?.id} />
 
+            {lesson.paid > 0 && (
+              <InfoAlert title="שולם חלקית">
+                <p>
+                  בוצעו תשלומים ע״ס <strong>{lesson.paid}</strong> ש״ח עבור
+                  שיעור זה.
+                </p>
+              </InfoAlert>
+            )}
+
             <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-2 sm:rtl:space-x-reverse">
               <div className="flex-1">
                 <label
                   htmlFor="sum"
                   className="block text-sm font-semibold text-gray-500"
                 >
-                  סכום ששולם
+                  סכום
                 </label>
                 <input
                   type="number"
@@ -48,7 +58,10 @@ export default function AddPaymentModal({
                   id="sum"
                   autoComplete="none"
                   className="mt-1 block w-full rounded-md border-gray-300 py-1 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:py-2 sm:text-sm"
-                  defaultValue={(lesson.price * lesson.event.duration) / 60}
+                  defaultValue={Math.max(
+                    (lesson.price * lesson.event.duration) / 60 - lesson.paid,
+                    0
+                  )}
                 />
               </div>
               <div className="">

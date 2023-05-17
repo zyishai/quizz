@@ -8,9 +8,10 @@ export type Lesson = EntityBase & {
   notes?: string;
   address?: string;
   price: number;
+  paid: number;
   student: Student | string;
   summary?: string;
-  ended?: boolean;
+  ended?: boolean; // <-- DEPRECATED
 }
 
 export type CreateLessonDto = {

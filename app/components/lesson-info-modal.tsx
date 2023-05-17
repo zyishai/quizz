@@ -23,13 +23,6 @@ export default function LessonInfoModal({
 }: LessonInfoProps) {
   const [showEditLessonModal, setShowEditLessonModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [ended, setEnded] = useState(!!lesson?.ended);
-
-  useEffect(() => {
-    if (lesson && ended !== lesson.ended) {
-      setEnded(!!lesson.ended);
-    }
-  }, [lesson, ended]);
 
   return (
     <>
@@ -57,9 +50,8 @@ export default function LessonInfoModal({
               type="button"
               className="mt-3 inline-flex w-full justify-center rounded-md bg-orange-100 px-3 py-2 text-sm font-medium shadow-sm hover:bg-orange-200 disabled:bg-gray-200 disabled:text-gray-500"
               onClick={() => setShowPaymentModal(true)}
-              disabled={ended}
             >
-              {ended ? "תשלום בוצע" : "בצע תשלום עבור שיעור זה"}
+              הוסף תשלום עבור שיעור זה
             </button>
             <Form method="post" className="mt-3 w-full" action="/lessons?index">
               <input
