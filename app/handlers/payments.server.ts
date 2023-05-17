@@ -13,11 +13,11 @@ import { updateLessonDetails } from "~/adapters/lesson.adapter";
 import { deleteLessonById } from "~/adapters/lesson.adapter";
 
 export const getPaymentAccountsList = async (teacherId: string) => {
-  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson.id'] });
+  return fetchPaymentAccountsByTeacherId(teacherId, { fetch: ['students', 'contacts', 'billings.lesson.id'] });
 }
 
 export const getPaymentAccountById = async (teacherId: string, accountId: string) => {
-  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'payments.lesson', 'billings.lesson.id'] });
+  const account = await fetchPaymentAccountById({ teacherId, accountId, fetch: ['students', 'contacts', 'billings.lesson.id'] });
   if (!account) {
     throw new AppError({ errType: ErrorType.AccountNotFound });
   }
