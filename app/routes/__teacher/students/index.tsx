@@ -406,13 +406,8 @@ export default function ListStudents() {
                         <td className="border-b border-gray-100 py-3 px-6 text-sm font-medium text-gray-500">
                           <ul className="space-y-2 truncate">
                             {student?.contacts?.map((contact) => (
-                              <li
-                                key={contact.id}
-                                className="text-blue-600 hover:text-blue-700"
-                              >
-                                <Link to={`/contacts/${contact.id}`}>
-                                  {contact.fullName}
-                                </Link>
+                              <li key={contact.id} className="text-gray-500">
+                                <span>{contact.fullName}</span>
                                 &nbsp;
                                 <Form method="post" className="inline-block">
                                   <input

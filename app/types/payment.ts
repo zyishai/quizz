@@ -1,4 +1,8 @@
-import { Lesson } from "./lesson";
+/**
+ * THIS MODULE IS DEPRECATED. IT IS SAVED FOR BACKWARD SUPPORT.
+ * AFTER CLEANING UNUSED METHODS FROM SERVER - SHOULD REMOVE THESE TYPES AS WELL.
+ */
+
 import { DateTimeString } from "./misc";
 
 export enum PaymentStatus {

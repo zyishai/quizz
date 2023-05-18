@@ -8,7 +8,6 @@ import {
 import {
   Form,
   useActionData,
-  useFetcher,
   useLoaderData,
   useSearchParams,
 } from "@remix-run/react";
@@ -22,7 +21,6 @@ import { DateRange, OffsetUnit } from "~/types/datetime";
 import { ErrorType } from "~/types/errors";
 import { AppError } from "~/utils/app-error";
 import { getRange } from "~/utils/calendar";
-import { setLastLessonsView } from "~/utils/client-prefs.server";
 import { offsetRangeBy } from "~/utils/datetime";
 import { getUserId } from "~/utils/session.server";
 import CalendarGrid from "~/components/calendar-grid";
@@ -153,19 +151,12 @@ export const loader = async ({ request }: LoaderArgs) => {
       const userAgent = request.headers.get("user-agent");
       const { any: isMobilePhone } = isMobile(userAgent || undefined);
 
-      return json(
-        {
-          events,
-          range,
-          students,
-          isMobilePhone,
-        },
-        {
-          headers: {
-            "Set-Cookie": await setLastLessonsView(request, "calendar"),
-          },
-        }
-      );
+      return json({
+        events,
+        range,
+        students,
+        isMobilePhone,
+      });
     } else {
       throw new AppError({ errType: ErrorType.TeacherNotFound });
     }
@@ -173,6 +164,10 @@ export const loader = async ({ request }: LoaderArgs) => {
     throw new AppError({ errType: ErrorType.UserNotFound });
   }
 };
+
+if (typeof document !== "undefined") {
+  (window as any).dayjs = dayjs;
+}
 
 export default function LessonsCalendarView() {
   const loaderData = useLoaderData<typeof loader>();

@@ -1,5 +1,4 @@
-import { EntityBase, InclusiveRange, Replace } from "./misc";
-import { PaymentAccount } from "./payment-account";
+import { EntityBase, InclusiveRange } from "./misc";
 
 export type Grade = InclusiveRange<1, 12>;
 export type Student = EntityBase & {

@@ -21,7 +21,7 @@ dayjs.locale(localeHebrew);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault("Israel");
+dayjs.tz.setDefault("Asia/Jerusalem");
 
 export const links: LinksFunction = () => {
   return [

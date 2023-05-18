@@ -1,6 +1,5 @@
-import dayjs from "dayjs"
 import { ErrorType } from "~/types/errors"
-import { PaymentMethod } from "~/types/payment"
+import { PaymentMethod } from "~/types/payment-account"
 import { AppError } from "./app-error"
 
 export const formatDuration = (duration: number) => {
@@ -56,9 +55,6 @@ export const formatPaymentMethod = (method?: PaymentMethod) => {
       return 'קרדיט';
     }
   }
-}
-export const formatDateAndTime = (datetime: string | Date) => {
-  return dayjs(datetime).format('DD.MM.YYYY, HH:mm');
 }
 export const formatGrade = (grade: number) => {
   switch(grade) {
