@@ -31,8 +31,8 @@ type GetTeacherProps = {
 export async function getTeacherByUserId(userId: string, props?: GetTeacherProps): Promise<Teacher | null> {
   const db = await getDatabaseInstance();
   const query = props?.fetchUser
-    ? 'select * from teacher where user = $userId fetch user'
-    : 'select * from teacher where user = $userId';
+    ? 'select * from teacher where user = $userId and user.blocked != true fetch user'
+    : 'select * from teacher where user = $userId and user.blocked != true';
   const [teacher] = await db.query<Result<Teacher[]>[]>(query, { userId });
   if (teacher.error) {
     throw teacher.error;

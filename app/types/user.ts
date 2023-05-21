@@ -4,4 +4,5 @@ export type User = EntityBase & {
   username: string;
   hashedPassword: string;
   email: string;
+  blocked?: boolean;
 }
