@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { addPaymentToStudentAccount, addStandalonePayment, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, deletePaymentByIdV2, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, updatePaymentDetails, updatePaymentDetailsV2 } from "~/adapters/payment.adapter"
+import { addPaymentToStudentAccount, addStandalonePayment, addStudentToPaymentAccount, createPaymentAccount, deletePaymentAccountById, deletePaymentById, deletePaymentByIdV2, fetchPaymentAccountById, fetchPaymentAccountByStudentId, fetchPaymentAccountsByTeacherId, findStudentsWithoutAccount, makePaymentToAccount, removeStudentFromPaymentAccount, resetAccountBills, resetAccountCredits, updatePaymentDetails, updatePaymentDetailsV2 } from "~/adapters/payment.adapter"
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import { ErrorType } from "~/types/errors";
 import { CreatePaymentAccountDto, PaymentMethod } from "~/types/payment-account";
@@ -254,6 +254,31 @@ export const deleteTransaction = async (request: Request) => {
     throw new AppError({ errType: ErrorType.UserNotFound });
   }
 };
+export const resetAccount = async (request: Request) => {
+  const userId = await getUserId(request);
+  if (userId) {
+    const teacher = await getTeacherByUserId(userId);
+    if (teacher) {
+      const formData = await request.formData();
+      const accountId = formData.get('accountId');
+      assertString(accountId);
+
+      if (!await resetAccountBills(accountId)) {
+        throw new AppError({ errType: ErrorType.AccountResetFailed });
+      }
+      const account = await resetAccountCredits(accountId);
+      if (!account) {
+        throw new AppError({ errType: ErrorType.AccountResetFailed });
+      }
+
+      return json({ account });
+    } else {
+      throw new AppError({ errType: ErrorType.TeacherNotFound });
+    }
+  } else {
+    throw new AppError({ errType: ErrorType.UserNotFound });
+  }
+}
 
 export const deletePayment = async (request: Request) => {
   const userId = await getUserId(request);

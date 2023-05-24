@@ -341,3 +341,25 @@ export async function deletePaymentByIdV2(paymentId: string): Promise<PaymentAcc
 
   return accounts.result.length > 0 ? accounts.result[0] : null;
 }
+
+export async function resetAccountBills(accountId: string): Promise<boolean> {
+  const db = await getDatabaseInstance();
+
+  const [results] = await db.query('delete from lesson where $accountId.students contains student', { accountId });
+  if (results.error) {
+    throw results.error;
+  }
+
+  return true;
+}
+
+export async function resetAccountCredits(accountId: string): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+
+  const [accounts] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set payments = []', { accountId });
+  if (accounts.error) {
+    throw accounts.error;
+  }
+
+  return accounts.result.length > 0 ? accounts.result[0] : null;
+}

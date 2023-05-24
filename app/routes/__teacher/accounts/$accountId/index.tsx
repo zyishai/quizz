@@ -1,5 +1,5 @@
 import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
-import { Link, useLoaderData, useLocation } from "@remix-run/react";
+import { Form, Link, useLoaderData, useLocation } from "@remix-run/react";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
@@ -12,6 +12,7 @@ import {
   deleteDebit,
   deleteTransaction,
   makePayment,
+  resetAccount,
   updateTransaction,
 } from "~/handlers/payments.server";
 import { getPaymentAccountById } from "~/handlers/payments.server";
@@ -43,6 +44,7 @@ export const action = async ({ request }: ActionArgs) => {
     deleteCredit: () => deleteCredit(request),
     deleteDebit: () => deleteDebit(request),
     deleteTransaction: () => deleteTransaction(request),
+    resetAccount: () => resetAccount(request),
   });
 };
 
@@ -93,6 +95,11 @@ export default function PaymentAccountInfoPage() {
 
   return (
     <>
+      <Form id="reset-account-form" method="post">
+        <input type="hidden" name="_action" value="resetAccount" />
+        <input type="hidden" name="accountId" value={account.id} />
+      </Form>
+
       <div>
         <Link
           to={"/accounts" || searchParams.get("returnTo") || "/students"}
@@ -139,9 +146,27 @@ export default function PaymentAccountInfoPage() {
               יתרה נוכחית
             </dt>
           </div>
-          {/* <button type="button" className="self-center text-sm text-red-400">
+
+          <button
+            type="submit"
+            form="reset-account-form"
+            className="self-center rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+            onClick={(e) => {
+              if (
+                !confirm(
+                  "בטוח? פעולה זו תמחק את כל התשלומים וגם את השיעורים של התלמיד."
+                )
+              ) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }
+
+              return true;
+            }}
+          >
             אפס כרטיסיה
-          </button> */}
+          </button>
         </section>
 
         <div className="mt-5 flex items-center justify-between">
@@ -359,7 +384,10 @@ function generateTransactionsHistory(account: PaymentAccount): Transaction[] {
   const billings = account.billings;
   const transactions = billings.map((billing) => {
     const payment = payments.find(
-      (payment) => !!payment.lesson && payment.lesson.id === billing.lesson?.id
+      (payment) =>
+        !!payment.lesson &&
+        (payment.lesson.id === billing.lesson?.id ||
+          (payment.lesson as unknown as string) === billing.lesson?.id)
     );
     return {
       id: billing.id,
