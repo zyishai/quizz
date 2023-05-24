@@ -121,7 +121,7 @@ export default function EditLessonModal({
                     ?.map((slot) => (
                       <option
                         key={dayjs(slot).tz("utc").format("HH:mm")}
-                        value={dayjs.tz(slot, "Israel").toISOString()}
+                        value={dayjs(slot).toISOString()}
                       >
                         {dayjs(slot).tz("utc").format("HH:mm")}
                       </option>

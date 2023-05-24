@@ -342,7 +342,7 @@ export default function LessonsCalendarView() {
         layouts={{
           lg: events.map((lesson) => {
             const date = hasEventFetched(lesson)
-              ? dayjs(lesson.event.dateAndTime)
+              ? dayjs(lesson.event.dateAndTime).utc()
               : null;
             return {
               i: lesson.id,

@@ -141,10 +141,10 @@ export default function AddLessonModal({
                 {(fetcher.data || timeSlotsRef.current) /*|| fields?.slots*/
                   ?.map((slot) => (
                     <option
-                      key={dayjs(slot).tz("utc").format("HH:mm")}
+                      key={dayjs(slot).utc().format("HH:mm")}
                       value={dayjs(slot).toISOString()}
                     >
-                      {dayjs(slot).tz("utc").format("HH:mm")}
+                      {dayjs(slot).utc().format("HH:mm")}
                     </option>
                   ))}
               </select>
