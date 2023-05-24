@@ -31,7 +31,7 @@ type FetchLessonsProps = {
 }
 export async function fetchLessonsByTeacherId(teacherId: string, props?: FetchLessonsProps): Promise<Lesson[]> {
   const db = await getDatabaseInstance();
-  let query = 'select *, math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) as paid from lesson where event<-schedule<-teacher.id contains $teacherId and event.status == "ACTIVE"';
+  let query = 'select *, math::sum((select math::sum(payments[where lesson == $parent.id].sum) from paymentAccount)) as paid, (select id from paymentAccount where students contains $parent.student) as accountIds from lesson where event<-schedule<-teacher.id contains $teacherId and event.status == "ACTIVE"';
   if (props?.days) {
     query += ' and time::group(event.dateAndTime, "day") inside $days';
   }

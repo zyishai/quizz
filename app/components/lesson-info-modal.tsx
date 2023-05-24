@@ -1,7 +1,7 @@
 import Dialog from "./dialog";
 import { useEffect, useState } from "react";
 import { hasEventFetched, hasStudentFetched } from "~/utils/misc";
-import { Form } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { Lesson } from "~/types/lesson";
 import EditLessonModal from "./edit-lesson-modal";
 import { Student } from "~/types/student";
@@ -53,6 +53,12 @@ export default function LessonInfoModal({
             >
               הוסף תשלום עבור שיעור זה
             </button>
+            <Link
+              to={`/accounts/${lesson?.accountIds?.[0]}#${lesson?.id}`}
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-1 focus:outline-amber-200"
+            >
+              הצג בכרטיסית תשלום
+            </Link>
             <Form method="post" className="mt-3 w-full" action="/lessons?index">
               <input
                 type="hidden"

@@ -12,6 +12,7 @@ export type Lesson = EntityBase & {
   student: Student | string;
   summary?: string;
   ended?: boolean; // <-- DEPRECATED
+  accountIds?: string[];
 }
 
 export type CreateLessonDto = {
