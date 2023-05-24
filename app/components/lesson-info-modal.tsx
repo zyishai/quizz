@@ -40,7 +40,7 @@ export default function LessonInfoModal({
           <div className="flex flex-col sm:min-w-[240px]">
             <button
               type="button"
-              className="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500"
+              className="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-1 focus:outline-amber-200"
               onClick={() => setShowEditLessonModal(true)}
               autoFocus
             >
@@ -48,7 +48,7 @@ export default function LessonInfoModal({
             </button>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-orange-100 px-3 py-2 text-sm font-medium shadow-sm hover:bg-orange-200 disabled:bg-gray-200 disabled:text-gray-500"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-1 focus:outline-amber-200 disabled:bg-gray-200 disabled:text-gray-500"
               onClick={() => setShowPaymentModal(true)}
             >
               הוסף תשלום עבור שיעור זה
@@ -62,7 +62,7 @@ export default function LessonInfoModal({
               <input type="hidden" name="lessonId" value={lesson?.id} />
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 shadow-sm hover:bg-amber-200"
+                className="flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-1 focus:outline-amber-200"
                 onClick={(e) => {
                   if (!confirm(`האם ברצונך למחוק שיעור זה?`)) {
                     e.preventDefault();
@@ -77,7 +77,7 @@ export default function LessonInfoModal({
             </Form>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-1 focus:outline-amber-200"
               onClick={onClose}
             >
               ביטול
