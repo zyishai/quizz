@@ -4,6 +4,7 @@ import { Lesson } from "~/types/lesson";
 import { hasEventFetched, hasStudentFetched } from "~/utils/misc";
 import { paymentMethods } from "~/utils/payment-methods";
 import InfoAlert from "./InfoAlert";
+import SuccessAlert from "./SuccessAlert";
 
 type AddPaymentProps = {
   open: boolean;
@@ -35,14 +36,22 @@ export default function AddPaymentModal({
             <input type="hidden" name="_action" value="makePayment" />
             <input type="hidden" name="lessonId" value={lesson?.id} />
 
-            {lesson.paid > 0 && (
-              <InfoAlert title="שולם חלקית">
-                <p>
-                  בוצעו תשלומים ע״ס <strong>{lesson.paid}</strong> ש״ח עבור
-                  שיעור זה.
-                </p>
-              </InfoAlert>
-            )}
+            {lesson.paid > 0 &&
+              (lesson.paid < (lesson.price * lesson.event.duration) / 60 ? (
+                <InfoAlert title="שולם חלקית">
+                  <p>
+                    בוצעו תשלומים ע״ס <strong>{lesson.paid}</strong> ש״ח עבור
+                    שיעור זה.
+                  </p>
+                </InfoAlert>
+              ) : (
+                <SuccessAlert title="שולם במלואו">
+                  <p>
+                    בוצעו תשלומים ע״ס <strong>{lesson.paid}</strong> ש״ח עבור
+                    שיעור זה.
+                  </p>
+                </SuccessAlert>
+              ))}
 
             <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-2 sm:rtl:space-x-reverse">
               <div className="flex-1">
