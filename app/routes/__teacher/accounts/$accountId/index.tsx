@@ -394,7 +394,7 @@ function generateTransactionsHistory(account: PaymentAccount): Transaction[] {
       billingId: billing.id,
       paymentId: payment?.id,
       method: payment?.method,
-      date: billing.createdAt,
+      date: billing.date,
       debit: billing.sum,
       credit: payment?.sum,
     };
