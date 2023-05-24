@@ -168,9 +168,13 @@ export const updateTransaction = async (request: Request) => {
       }
 
       if (billingId) {
-        const lesson = await updateLessonDetails({ lessonId: billingId, price: debit });
-        if (!lesson) {
-          throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+        const originalLesson = await getLesson(teacher.id, billingId);
+        if (hasEventFetched(originalLesson)) {
+          const pricePerHour = Number(debit) / (originalLesson.event.duration / 60);
+          const lesson = await updateLessonDetails({ lessonId: billingId, price: pricePerHour });
+          if (!lesson) {
+            throw new AppError({ errType: ErrorType.LessonUpdateFailed });
+          }
         }
       }
       

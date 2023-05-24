@@ -80,7 +80,7 @@ export default function PaymentAccountInfoPage() {
   const balance = useMemo(
     () =>
       transactions.reduce(
-        (sum, tx) => sum + (tx.credit || 0) + (tx.debit || 0),
+        (sum, tx) => sum + Number(tx.credit || 0) + Number(tx.debit || 0),
         0
       ),
     [transactions]
@@ -228,16 +228,16 @@ export default function PaymentAccountInfoPage() {
                             /
                           </span>
                         ) : null}
-                        {tx.credit && (
+                        {tx.credit ? (
                           <span className="text-lg font-medium tabular-nums leading-none text-green-600">
-                            זכות: {Math.abs(tx.credit || 0)}{" "}
+                            זכות: {Math.abs(tx.credit || 0)}
                             <span className="text-xs text-gray-500">
                               {tx.method
                                 ? `(${formatPaymentMethod(tx.method)})`
                                 : null}
                             </span>
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <span className="text-xs text-gray-400">
                         {dayjs(tx.date).format("DD MMM YYYY")}
