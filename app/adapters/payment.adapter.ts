@@ -363,3 +363,14 @@ export async function resetAccountCredits(accountId: string): Promise<PaymentAcc
 
   return accounts.result.length > 0 ? accounts.result[0] : null;
 }
+
+export async function setAccountInitialBalance(accountId: string, initialBalance: number): Promise<PaymentAccount | null> {
+  const db = await getDatabaseInstance();
+
+  const [accounts] = await db.query<Result<PaymentAccount[]>[]>('update $accountId set initialBalance = $initialBalance', { accountId, initialBalance });
+  if (accounts.error) {
+    throw accounts.error;
+  }
+
+  return accounts.result.length > 0 ? accounts.result[0] : null;
+}

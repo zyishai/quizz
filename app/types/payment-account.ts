@@ -69,6 +69,7 @@ export type PaymentAccount = EntityBase & {
   students: string[] | Student[];
   contacts: string[] | Contact[];
   teacher: string | Teacher;
+  initialBalance?: number;
 }
 
 export type CreatePaymentAccountDto = {

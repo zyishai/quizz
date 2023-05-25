@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { namedAction } from "remix-utils";
 import { getTeacherByUserId } from "~/adapters/teacher.adapter";
 import AddDetachedPaymentModal from "~/components/add-detached-payment-modal";
+import ResetInitialBalanceModal from "~/components/reset-initial-balance-modal";
 import TransactionInfoModal from "~/components/transaction-info-modal";
 import {
   deleteCredit,
@@ -13,6 +14,7 @@ import {
   deleteTransaction,
   makePayment,
   resetAccount,
+  resetInitialBalance,
   updateTransaction,
 } from "~/handlers/payments.server";
 import { getPaymentAccountById } from "~/handlers/payments.server";
@@ -45,6 +47,7 @@ export const action = async ({ request }: ActionArgs) => {
     deleteDebit: () => deleteDebit(request),
     deleteTransaction: () => deleteTransaction(request),
     resetAccount: () => resetAccount(request),
+    resetInitialBalance: () => resetInitialBalance(request),
   });
 };
 
@@ -81,11 +84,12 @@ export default function PaymentAccountInfoPage() {
     () =>
       transactions.reduce(
         (sum, tx) => sum + Number(tx.credit || 0) + Number(tx.debit || 0),
-        0
+        account.initialBalance || 0
       ),
     [transactions]
   );
   const [showMakePaymentModal, setShowMakePaymentModal] = useState(false);
+  const [showInitialBalanceModal, setShowInitialBalanceModal] = useState(false);
   // const [editTransactionModalTransactionIndex, setShowEditTransactionModal] =
   //   useState<number | null>(null);
   const [transactionInfoModalTransactionIndex, setShowTransactionInfoModal] =
@@ -120,7 +124,11 @@ export default function PaymentAccountInfoPage() {
 
       <main className="mt-3 flex-1 overflow-auto">
         <section className="flex border-b border-t border-gray-200 py-6">
-          <div className="grid h-10 w-10 flex-none place-content-center rounded-lg border border-gray-300 bg-white shadow-sm ltr:mr-3 rtl:ml-3">
+          <button
+            type="button"
+            className="grid h-10 w-10 flex-none place-content-center rounded-lg border border-gray-300 bg-white shadow-sm ltr:mr-3 rtl:ml-3"
+            onClick={() => setShowInitialBalanceModal(true)}
+          >
             <BanknotesIconSolid
               className={clsx([
                 "h-6 w-6",
@@ -131,7 +139,7 @@ export default function PaymentAccountInfoPage() {
                 },
               ])}
             />
-          </div>
+          </button>
           <div className="flex-1">
             <dd className="mb-1 flex items-end text-xl font-medium leading-none tracking-tight text-gray-900">
               <span dir="ltr" className="tabular-nums leading-5">
@@ -373,6 +381,11 @@ export default function PaymentAccountInfoPage() {
       <AddDetachedPaymentModal
         open={showMakePaymentModal}
         onClose={() => setShowMakePaymentModal(false)}
+        account={account}
+      />
+      <ResetInitialBalanceModal
+        open={showInitialBalanceModal}
+        onClose={() => setShowInitialBalanceModal(false)}
         account={account}
       />
     </>
