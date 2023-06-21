@@ -151,19 +151,19 @@ export default function PaymentAccountsListPage() {
               {accounts.map((account) => {
                 const balance =
                   account.billings.reduce(
-                    (sum, billing) => sum + billing.sum,
+                    (sum, billing) => sum + Number(billing.sum),
                     0
                   ) +
                   account.payments.reduce(
-                    (sum, payment) => sum + payment.sum,
+                    (sum, payment) => sum + Number(payment.sum),
                     0
                   );
                 return (
                   <li
                     key={account.id}
-                    className="overflow-hidden rounded-xl border border-gray-300 shadow-sm"
+                    className="flex flex-col overflow-hidden rounded-xl border border-gray-300 bg-red-300 shadow-sm"
                   >
-                    <div className="bg-gray-0 flex items-center gap-x-2.5 border-b border-gray-900/5 bg-white px-6 py-3">
+                    <div className="bg-gray-0 flex flex-1 items-center gap-x-2.5 border-b border-gray-900/5 bg-white px-6 py-3">
                       <div className="grid h-11 w-11 flex-none place-content-center rounded-lg border border-gray-300 bg-white ltr:mr-3 rtl:ml-3">
                         <BanknotesIconSolid className="h-5 w-5 text-emerald-500" />
                       </div>
@@ -174,7 +174,10 @@ export default function PaymentAccountsListPage() {
                               {account.students[0].fullName}
                             </dd>
                             <dt className="flex items-center text-sm leading-6 text-gray-500">
-                              <span dir="ltr" className="tabular-nums">
+                              <span
+                                dir="ltr"
+                                className="font-medium tabular-nums"
+                              >
                                 {balance}
                               </span>
                               <IconCurrencyShekel className="inline-block h-4 w-auto" />
@@ -195,12 +198,12 @@ export default function PaymentAccountsListPage() {
                         )}
                       </div>
                     </div>
-                    <button
-                      type="button"
+                    <Link
+                      to={`/accounts/${account.id}`}
                       className="w-full bg-gray-50 px-6 py-3 text-center text-sm leading-6 text-gray-800 shadow-sm hover:bg-gray-100"
                     >
                       צפה בפרטי החשבון
-                    </button>
+                    </Link>
                   </li>
                 );
               })}

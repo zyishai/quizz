@@ -84,7 +84,7 @@ export default function PaymentAccountInfoPage() {
     () =>
       transactions.reduce(
         (sum, tx) => sum + Number(tx.credit || 0) + Number(tx.debit || 0),
-        account.initialBalance || 0
+        Number(account.initialBalance) || 0
       ),
     [transactions]
   );
@@ -203,7 +203,8 @@ export default function PaymentAccountInfoPage() {
                 transactions
                   .slice(0, index)
                   .reduce(
-                    (sum, tx) => sum + (tx.credit || 0) + (tx.debit || 0),
+                    (sum, tx) =>
+                      sum + Number(tx.credit || 0) + Number(tx.debit || 0),
                     0
                   );
               return (
