@@ -47,11 +47,11 @@ export default function DeleteTransactionModal({
             />
           </Form>
 
-          <div className="sm:flex sm:flex-row-reverse sm:ltr:pl-40 sm:rtl:pr-40">
+          <div className="sm:flex sm:min-w-[360px] sm:flex-col">
             <button
               type="submit"
               form="delete-credit"
-              className="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
+              className="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500"
               autoFocus
               onClick={(e) => {
                 if (
@@ -70,7 +70,7 @@ export default function DeleteTransactionModal({
             <button
               type="submit"
               form="delete-debit"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500"
               onClick={(e) => {
                 if (
                   !confirm(
@@ -88,7 +88,7 @@ export default function DeleteTransactionModal({
             <button
               type="submit"
               form="delete-both"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500"
               onClick={(e) => {
                 if (
                   !confirm(
@@ -105,7 +105,7 @@ export default function DeleteTransactionModal({
             </button>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               onClick={onClose}
             >
               ביטול

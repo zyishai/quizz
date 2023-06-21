@@ -24,16 +24,20 @@ export default function TransactionInfoModal({
     <>
       <Dialog open={open} onClose={onClose} title="בחר פעולה">
         <Dialog.Body>
-          <div className="sm:flex sm:flex-row-reverse sm:ltr:pl-40 sm:rtl:pr-40">
+          <div className="sm:flex sm:min-w-[360px] sm:flex-col">
             <button
               type="button"
-              className="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
+              className="flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-500"
               onClick={() => setShowEditTransactionModal(true)}
               autoFocus
             >
               ערוך
             </button>
-            <Form method="post" className="mt-3" onSubmit={onClose}>
+            <Form
+              method="post"
+              className="mt-3 block w-full"
+              onSubmit={onClose}
+            >
               <input
                 type="hidden"
                 name="paymentId"
@@ -46,7 +50,7 @@ export default function TransactionInfoModal({
               />
               <button
                 type="submit"
-                className="inline-flex w-full justify-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 shadow-sm hover:bg-amber-200 sm:w-auto sm:ltr:ml-3 sm:rtl:mr-3"
+                className="flex w-full justify-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 shadow-sm hover:bg-amber-200"
                 onClick={(e) => {
                   if (!transaction?.paymentId || !transaction.billingId) {
                     if (
@@ -84,7 +88,7 @@ export default function TransactionInfoModal({
             </Form>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              className="mt-3 flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               onClick={onClose}
             >
               ביטול
